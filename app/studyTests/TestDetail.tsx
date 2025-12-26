@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
+  Modal, Image
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -126,7 +126,6 @@ export default function TestDetail() {
         })}
       </View>
 
-      {/* NAV BUTTONS (POSITION UNCHANGED) */}
       <View style={styles.navRow}>
         <TouchableOpacity
           disabled={currentIndex === 0}
@@ -137,7 +136,7 @@ export default function TestDetail() {
           ]}
           onPress={() => setCurrentIndex(currentIndex - 1)}
         >
-          <Ionicons name="chevron-back" size={18} color="#4B1F3B" />
+          <Ionicons name="chevron-back" size={18} color="#331424" />
           <Text style={styles.secondaryBtnText}>Previous</Text>
         </TouchableOpacity>
 
@@ -175,9 +174,13 @@ export default function TestDetail() {
       <Modal visible={showResult} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Test Completed 🎉</Text>
+            <Text style={styles.modalTitle}>Test Completed!</Text>
+            <Image
+                            source={require("../../assets/icons/confetti.gif")}
+                            style={{ width: 90, height: 90, marginBottom: 15 }}
+                          />
             <Text style={styles.modalScore}>
-              Score: {score} / {questions.length}
+              Score: {score}  / total mark
             </Text>
 
             <TouchableOpacity
@@ -202,14 +205,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     margin: 15,
-    color: '#4B1F3B',
+    color: '#331424',
   },
 
   timer: {
     alignSelf: 'flex-end',
     marginRight: 20,
     fontWeight: '700',
-    color: '#FF0080',
+    color: '#FD2A9B',
   },
 
   card: {
@@ -236,13 +239,13 @@ const styles = StyleSheet.create({
   },
 
   optionSelected: {
-    borderColor: '#FF0080',
-    backgroundColor: '#FFE3F0',
+    borderColor: '#1abc2dff',
+    backgroundColor: '#b4f8bcff',
   },
 
   correct: {
     backgroundColor: '#D4F8E8',
-    borderColor: '#1ABC9C',
+    borderColor: '#1abc2dff',
   },
 
   wrong: {
@@ -267,19 +270,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 18,
-    borderRadius: 30,
+    borderRadius: 12,
     minWidth: 120,
     elevation: 3,
   },
 
   primaryBtn: {
-    backgroundColor: '#FF0080',
+    backgroundColor: '#FD2A9B',
   },
 
   secondaryBtn: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#4B1F3B',
+    borderColor: '#331424',
   },
 
   primaryBtnText: {
@@ -289,7 +292,7 @@ const styles = StyleSheet.create({
   },
 
   secondaryBtnText: {
-    color: '#4B1F3B',
+    color: '#331424',
     fontWeight: '700',
     marginHorizontal: 6,
   },
@@ -325,10 +328,10 @@ const styles = StyleSheet.create({
   },
 
   doneBtn: {
-    backgroundColor: '#FF0080',
+    backgroundColor: '#FD2A9B',
     paddingVertical: 14,
     paddingHorizontal: 40,
-    borderRadius: 30,
+    borderRadius: 12,
   },
 
   doneText: {

@@ -9,7 +9,7 @@ import {
   Dimensions,
   ImageBackground,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/global";
 import IconButton from "../buttons/iconButton";
@@ -43,7 +43,7 @@ export default function FlowerCard() {
             <Image source={require('../../assets/icons/upcoming.png')}/>
             <Text style={styles.text}>45 minutes</Text>
         </View>
-        <IconButton icon={require("../../assets/icons/nextpng.png")} title={"Take Test"}/>
+        <IconButton icon={require("../../assets/icons/nextpng.png")} onPress={() => router.push("/(tabs)/test")} title={"Take Test"}/>
         </View>
         <Image source={require('../../assets/images/stack-of-books.png')} style={{width:165, height:165 ,position:'absolute', left:190, bottom:-10}} />
         </View>

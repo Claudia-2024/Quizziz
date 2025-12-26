@@ -5,7 +5,7 @@ import { useColorScheme } from "react-native";
 const lightTheme = {
   background: "#f2e6f7",
   text: "#000000",
-  white: "#ffffff",
+  white: "#00000",
   primary: "#331424",
   secondary: "#FD2A9B",
   navtext: "#ffffffff",

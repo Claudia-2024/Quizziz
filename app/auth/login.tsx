@@ -9,11 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/global";
-import InputField from "@/components/inputs/inputField";
+import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/buttons/button";
 
 const { width, height } = Dimensions.get("window");
@@ -25,6 +27,9 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const iconColor = "#331424";
 
   return (
     <ImageBackground
@@ -42,6 +47,7 @@ export default function Login() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.centerContainer}>
+            {/* Logo */}
             <Image
               source={require("../../assets/images/logo.png")}
               style={styles.logo}
@@ -59,20 +65,38 @@ export default function Login() {
               LOGIN
             </Text>
 
-            <InputField
-              placeholder="Email"
-              icon={require("../../assets/icons/email.png")}
-              value={email}
-              onChangeText={setEmail}
-            />
+            {/* Email Input */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                placeholderTextColor="#888"
+              />
+            </View>
 
-            <InputField
-              placeholder="Password"
-              icon={require("../../assets/icons/lock.png")}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            {/* Password Input */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                style={styles.input}
+                placeholderTextColor="#888"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color={iconColor}
+                />
+              </TouchableOpacity>
+            </View>
 
             <Button
               title="Login"
@@ -86,6 +110,7 @@ export default function Login() {
     </ImageBackground>
   );
 }
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -111,5 +136,20 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "900",
     marginBottom: 20,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginVertical: 8,
+    height: 50,
+    width: "100%",
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 8,
   },
 });

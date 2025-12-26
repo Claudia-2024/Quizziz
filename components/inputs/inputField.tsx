@@ -97,7 +97,7 @@ export default function InputField({
       <TextInput
         style={[
           styles.input,
-          { fontFamily: typography.fontFamily.buttonText, color: colors.text, backgroundColor: "transparent" },
+          { fontFamily: typography.fontFamily.buttonText, color: '#000', backgroundColor: "transparent" },
         ]}
         secureTextEntry={secureTextEntry}
         onFocus={handleFocus}
