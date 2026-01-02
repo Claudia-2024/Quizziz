@@ -3,12 +3,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/theme/global';
+import { useAuth } from '@/context/AuthContext';
 
 const Profile = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [name, setName] = useState('Forbin Astera-Lainey');
-  const [email, setEmail] = useState('forbin@example.com');
+  const { student, logout } = useAuth();
+  const initialName = [student?.firstName, student?.lastName].filter(Boolean).join(' ') || '—';
+  const initialEmail = student?.email || '—';
+  const [name, setName] = useState(initialName);
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('********');
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
@@ -17,6 +21,7 @@ const Profile = () => {
     <View style={styles.container}>
       <QuizHeader />
 
+      <ScrollView contentContainerStyle={styles.scrollContent}>
       {/* Profile Card */}
       <View style={styles.card}>
         <View style={styles.avatarContainer}>
@@ -49,11 +54,16 @@ const Profile = () => {
 </View>
 
         </View>
-
-        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-          <Text style={styles.buttonText}>Edit Profile</Text>
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+            <Text style={styles.buttonText}>Edit Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button, { backgroundColor: '#e74c3c' }]} onPress={logout}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      </ScrollView>
 
       {/* Edit Modal */}
       <Modal
@@ -142,6 +152,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
   },
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: 24,
+  },
   card: {
     width: '90%',
     backgroundColor: '#fff',
@@ -173,12 +187,17 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   value: { fontSize: 16, color: '#333' },
-
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+    marginTop: 16,
+  },
   button: {
-    marginTop: 25,
     backgroundColor: '#4B1F3B',
     paddingVertical: 15,
-    width: '100%',
+    flex: 1,
+    minWidth: 0,
     borderRadius: 15,
     alignItems: 'center',
   },

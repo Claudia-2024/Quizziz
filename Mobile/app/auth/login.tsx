@@ -19,7 +19,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/buttons/button";
 import { api } from "@/lib/api";
 import { ENDPOINTS } from "@/lib/config";
-import { saveToken } from "@/lib/storage";
+import { useAuth } from "@/context/AuthContext";
+import type { LoginSuccess } from "@/context/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -27,6 +28,7 @@ export default function Login() {
   const router = useRouter();
   const theme = useTheme();
   const { colors, typography } = theme;
+  const { setAuthFromLogin } = useAuth();
 
   const [mat, setMat] = useState("");
   const [password, setPassword] = useState("");
@@ -112,7 +114,7 @@ export default function Login() {
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
-                Already have an account? Sign Up.
+                Create an account? Sign Up.
               </Text>
             </TouchableOpacity>
 
@@ -125,12 +127,12 @@ export default function Login() {
                 setError(null);
                 setLoading(true);
                 try {
-                  const res = await api.post<{ token: string }>(ENDPOINTS.auth.login, {
+                  const res = await api.post<LoginSuccess>(ENDPOINTS.auth.login, {
                     matricule: mat,
                     password,
                   });
-                  if (res?.token) {
-                    await saveToken(res.token);
+                  if (res && res.token) {
+                    await setAuthFromLogin(res);
                   }
                   router.push("/(tabs)");
                 } catch (e: any) {

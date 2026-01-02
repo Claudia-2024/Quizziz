@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { ThemeProvider } from '@/theme/global';
 import { StatusBar } from 'react-native';
+import { AuthProvider } from '@/context/AuthContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,10 +23,12 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <SafeAreaProvider>
-        <StatusBar />
-        <Slot />  
-      </SafeAreaProvider>
+      <AuthProvider>
+        <SafeAreaProvider>
+          <StatusBar />
+          <Slot />  
+        </SafeAreaProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

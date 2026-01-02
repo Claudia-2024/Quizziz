@@ -6,6 +6,7 @@ import ResultCard from '@/components/cards/resultCard';
 import QuizHeader from '@/components/headers/header';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/config';
+import { useAuth } from '@/context/AuthContext';
 
 const index = () => {
 
@@ -18,6 +19,7 @@ const index = () => {
   const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
   const { typography } = theme;
+  const { student } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -42,7 +44,7 @@ const index = () => {
     return (
     <View style= {styles.container}>
       <QuizHeader/>
-      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:5,},styles.title]}>Hello Astera-Lainey</Text>
+      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:5,},styles.title]}>Hello {([student?.firstName, student?.lastName].filter(Boolean).join(' ') || 'there')}</Text>
       <View style={{ alignSelf:"center"}}>
        <FlowerCard/> 
       </View>
