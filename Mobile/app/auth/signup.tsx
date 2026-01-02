@@ -17,6 +17,8 @@ import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/global";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/buttons/button";
+import { api } from "@/lib/api";
+import { ENDPOINTS } from "@/lib/config";
 
 const { width, height } = Dimensions.get("window");
 
@@ -32,6 +34,8 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const iconColor = colors.primary;
 
@@ -150,12 +154,40 @@ export default function Signup() {
               </TouchableOpacity>
             </View>
 
+            {/* Error */}
+            {error ? (
+              <Text style={{ color: 'red' }}>{error}</Text>
+            ) : null}
             {/* Signup Button */}
             <Button
-              title="Sign Up"
+              title={loading ? "Creating account..." : "Sign Up"}
               iconPosition="right"
               icon={require("../../assets/icons/Forward.png")}
-              onPress={() => router.push("/(tabs)")}
+              onPress={async () => {
+                if (loading) return;
+                setError(null);
+                setLoading(true);
+                try {
+                  // Temporary defaults for fields required by backend
+                  const payload = {
+                    matricule: matricule,
+                    email,
+                    firstName,
+                    lastName,
+                    phoneNumber: 0,
+                    password,
+                    classId: 1,
+                    studentCardId: matricule || 'CARD-' + Math.random().toString(36).slice(2, 8),
+                  };
+                  await api.post(ENDPOINTS.auth.register, payload);
+                  // Navigate to login after successful registration
+                  router.push("/auth/login");
+                } catch (e: any) {
+                  setError(e?.message || "Failed to create account");
+                } finally {
+                  setLoading(false);
+                }
+              }}
             />
 
             {/* Login Link */}

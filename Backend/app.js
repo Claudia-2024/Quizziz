@@ -1,14 +1,7 @@
-// import sequelize from './config/database'
-
-// sequelize.sync().then(() => {
-//     console.log("All tables synchronised.");
-// }).catch(err => {
-//     console.error("Error synchronising tables: ", err);
-// });
+import sequelize from './config/database.js'
 import bodyParser from 'body-parser';
 import express from 'express';
 import studentRoutes from './routes/studentRoutes.js';
-import sequelize from './config/database.js';
 import nodeCron from 'node-cron';
 import academicYearController from './controllers/academicYearController.js';
 import semesterController from './controllers/semesterController.js';
@@ -29,6 +22,12 @@ import administratorRoutes from './routes/administratorRoutes.js';
 import deviceTokenRoutes from './routes/deviceTokenRoutes.js';
 import excelImportRoutes from './routes/excelImportRoutes.js';
 import { initializeFirebase } from './services/pushNotificationService.js';
+
+sequelize.sync().then(() => {
+    console.log("All tables synchronised.");
+}).catch(err => {
+    console.error("Error synchronising tables: ", err);
+});
 
 const app = express();
 
@@ -57,7 +56,7 @@ app.use("/excel", excelImportRoutes); //done
 initializeFirebase();
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port ${port}`);
     sequelize.authenticate()
   .then(() => {

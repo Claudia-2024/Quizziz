@@ -1,16 +1,44 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import { StyleSheet, Text, View, FlatList } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import FlowerCard from '@/components/cards/flowercard';
 import { useTheme } from '@/theme/global';
 import ResultCard from '@/components/cards/resultCard';
 import QuizHeader from '@/components/headers/header';
+import { api } from '@/lib/api';
+import { ENDPOINTS } from '@/lib/config';
 
 const index = () => {
 
   const [email, setEmail] = useState("");      
   const [password, setPassword] = useState(""); 
+  const [courses, setCourses] = useState<any[]>([]);
+  const [evaluations, setEvaluations] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
   const { typography } = theme;
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [coursesRes, evalsRes, notifRes] = await Promise.all([
+          api.get<any[]>(ENDPOINTS.courses.list),
+          api.get<any[]>(ENDPOINTS.evaluations.list),
+          api.get<any[]>(ENDPOINTS.notifications.list),
+        ]);
+        setCourses(Array.isArray(coursesRes) ? coursesRes : []);
+        setEvaluations(Array.isArray(evalsRes) ? evalsRes : []);
+        setNotifications(Array.isArray(notifRes) ? notifRes : []);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
     return (
     <View style= {styles.container}>
       <QuizHeader/>
@@ -20,21 +48,45 @@ const index = () => {
       </View>
       
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Recent Tests</Text>
-  <ResultCard
-  title="Math for engineers"
-  progress={17}
-  total={20}
-/>
-  <ResultCard
-  title="Math for engineers"
-  progress={20}
-  total={20}
-/>
-  <ResultCard
-  title="Math for engineers"
-  progress={15}
-  total={20}
-/>
+      {evaluations.slice(0, 3).map((ev, idx) => (
+        <ResultCard
+          key={String(ev?.id || idx)}
+          title={ev?.type ? `${ev.type} — ${ev?.courseCode || ''}` : (ev?.courseCode || 'Evaluation')}
+          progress={ev?.questions?.length || 0}
+          total={ev?.questions?.length || 0}
+        />
+      ))}
+
+      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Courses</Text>
+      {error ? <Text style={{ color: 'red', marginHorizontal: 15 }}>{error}</Text> : null}
+      {loading ? (
+        <Text style={{ marginHorizontal: 15 }}>Loading courses...</Text>
+      ) : (
+        <FlatList
+          data={courses}
+          keyExtractor={(item, idx) => String(item?.courseCode || idx)}
+          renderItem={({ item }) => (
+            <Text style={{ marginHorizontal: 15, marginBottom: 6, fontFamily: typography.fontFamily.body }}>
+              {item?.courseCode || 'N/A'} — {item?.courseName || ''}
+            </Text>
+          )}
+        />
+      )}
+
+      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Notifications</Text>
+      {notifications.length === 0 ? (
+        <Text style={{ marginHorizontal: 15, fontFamily: typography.fontFamily.body }}>No notifications</Text>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item, idx) => String(item?.id || idx)}
+          renderItem={({ item }) => (
+            <Text style={{ marginHorizontal: 15, marginBottom: 6, fontFamily: typography.fontFamily.body }}>
+              {item?.title || 'Notification'}: {item?.message || ''}
+            </Text>
+          )}
+        />
+      )}
 
 
     </View>
