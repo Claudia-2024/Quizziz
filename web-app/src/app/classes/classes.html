@@ -1,0 +1,424 @@
+<div class="app-container">
+
+  <div class="sidebar-container">
+    <app-sidebar
+      (sidebarStateChange)="onSidebarStateChange($event)">
+    </app-sidebar>
+  </div>
+
+  <!-- Main content  -->
+  <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280">
+
+    <app-navbar
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [pageTitle]="'Class Management'"
+      [currentUser]="currentUser"
+      (logout)="logout()"
+      (profileUpdate)="onProfileUpdate($event)">
+    </app-navbar>
+
+
+    <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
+      <div class="toast-icon">
+        <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
+      </div>
+      <div class="toast-message">{{toastMessage}}</div>
+      <button class="toast-close" (click)="hideToast()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Add New Class</h2>
+          <button class="modal-close" (click)="closeAddModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="className">Class Name *</label>
+            <input type="text" id="className" class="form-control"
+                   [(ngModel)]="newClass.name"
+                   placeholder="e.g., Mathematics 101">
+          </div>
+          <div class="form-group">
+            <label for="classDepartment">Department *</label>
+            <select id="classDepartment" class="form-control" [(ngModel)]="newClass.Department">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept">
+                {{dept}}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="classStudents">Number of Students *</label>
+            <input type="number" id="classStudents" class="form-control"
+                   [(ngModel)]="newClass.students"
+                   min="1" max="1000" placeholder="e.g., 45">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveClass()">
+            <i class="fas fa-save"></i> Save Class
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Class Modal -->
+    <div class="modal-overlay" *ngIf="showEditModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Edit Class</h2>
+          <button class="modal-close" (click)="closeEditModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editClassName">Class Name *</label>
+            <input type="text" id="editClassName" class="form-control"
+                   [(ngModel)]="editingClass.level"
+                   placeholder="e.g., Mathematics 101">
+          </div>
+          <div class="form-group">
+            <label for="editClassDepartment">Department *</label>
+            <select id="editClassDepartment" class="form-control" [(ngModel)]="editingClass.department">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept">
+                {{dept}}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editClassStudents">Number of Students *</label>
+            <input type="number" id="editClassStudents" class="form-control"
+                   [(ngModel)]="editingClass.totalStudents"
+                   min="1" max="1000" placeholder="e.g., 45">
+          </div>
+          <div class="form-group">
+            <label for="editClassStatus">Status</label>
+            <select id="editClassStatus" class="form-control" [(ngModel)]="editingClass.canDeactivate">
+              <option [value]="true">Active</option>
+              <option [value]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="updateClass()">
+            <i class="fas fa-save"></i> Update Class
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay" *ngIf="showImportModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Import Classes</h2>
+          <button class="modal-close" (click)="closeImportModal()" [disabled]="isImporting">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="form-group">
+            <label for="importFile">Select File *</label>
+            <div class="file-upload-container">
+              <input type="file" id="importFile"
+                    [accept]="ACCEPTED_FILE_TYPES"
+                    (change)="onFileSelected($event)"
+                    [disabled]="isImporting"
+                    class="file-input">
+              <label for="importFile" class="file-upload-label">
+                <i class="fas fa-file-upload"></i>
+                <span>{{importFileName || 'Choose CSV or Excel file'}}</span>
+              </label>
+            </div>
+            <small class="form-text">
+              Supported formats: CSV, XLS, XLSX, XLSM, XLSB, ODS, XLT, XLTX, XLTM, XLAM<br>
+              File must have headers: Level, Department, Students.
+              <a href="javascript:void(0)" (click)="downloadTemplate()" style="color: #331424; text-decoration: underline;">Download Excel template</a>
+            </small>
+          </div>
+
+
+          <div *ngIf="importFile && fileTypeInfo" class="file-info">
+            <div class="file-info-content">
+              <span class="file-icon">
+                {{ fileTypeInfo.type === 'csv' ? '📄' : '📊' }}
+              </span>
+              <div class="file-details">
+                <strong>{{ importFileName }}</strong>
+                <small class="text-muted">
+                  {{ fileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} •
+                  {{ (importFile.size / 1024).toFixed(1) }} KB
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="importPreviewData.length > 0" class="preview-section">
+            <h4>Preview (first {{importPreviewData.length}} rows)</h4>
+            <div class="preview-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th *ngFor="let header of importHeaders">{{header}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of importPreviewData">
+                    <td *ngFor="let header of importHeaders">{{row[header]}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="isImporting" class="progress-section">
+            <div class="progress-label">
+              Importing... {{importProgress}}%
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="importProgress"></div>
+            </div>
+          </div>
+
+          <div *ngIf="importResult" class="results-section">
+            <div [class]="importResult.success ? 'result-success' : 'result-error'">
+              <h4>{{importResult.success ? '✅ Import Successful' : '❌ Import Failed'}}</h4>
+              <p>{{importResult.message}}</p>
+              <p><strong>Imported:</strong> {{importResult.importedCount}} | <strong>Failed:</strong> {{importResult.failedCount}}</p>
+
+              <div *ngIf="importResult.errors && importResult.errors.length > 0" class="error-list">
+                <h5>Errors:</h5>
+                <ul>
+                  <li *ngFor="let error of importResult.errors">{{error}}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="isImporting">
+            Cancel
+          </button>
+          <button class="btn btn-primary" (click)="executeImport()"
+                  [disabled]="!importFile || isImporting">
+            <i class="fas fa-file-import"></i> {{isImporting ? 'Importing...' : 'Import'}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showConfirmModal">
+      <div class="modal-container confirm-modal">
+        <div class="modal-header" [class]="'confirm-header-' + confirmModalData.type">
+          <h2 class="modal-title">{{confirmModalData.title}}</h2>
+          <button class="modal-close" (click)="cancelAction()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body confirm-body">
+          <div class="confirm-icon">
+            <i [class]="
+              confirmModalData.type === 'activate' ? 'fas fa-check-circle' :
+              confirmModalData.type === 'deactivate' ? 'fas fa-power-off' :
+              confirmModalData.type === 'logout' ? 'fas fa-sign-out-alt' :
+              confirmModalData.type === 'update' ? 'fas fa-edit' :
+              'fas fa-info-circle'
+            "></i>
+          </div>
+          <h3 class="confirm-message" [innerHTML]="confirmModalData.message"></h3>
+          <p *ngIf="confirmModalData.type === 'logout'" class="confirm-warning">
+            You will be redirected to the login page.
+          </p>
+        </div>
+        <div class="modal-footer confirm-footer">
+          <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
+            {{confirmModalData.cancelText}}
+          </button>
+          <button class="btn confirm-action"
+                  [class]="'confirm-' + confirmModalData.type"
+                  (click)="confirmAction()">
+            {{confirmModalData.confirmText}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!--  Content Section -->
+    <main class="main-content">
+      <div class="content-container">
+
+        <div class="table-actions-header">
+          <div class="actions-right">
+            <button class="action-btn import-btn" (click)="importTable()">
+              <i class="fas fa-file-import"></i> Import Table
+            </button>
+            <button class="action-btn add-btn" (click)="openAddModal()">
+              <i class="fas fa-plus"></i> Add Class
+            </button>
+            <button class="action-btn export-btn" (click)="exportTable()">
+              <i class="fas fa-file-export"></i> Export Table
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+
+          <div class="table-header">
+            <div class="table-filters">
+              <div class="filter-group">
+                <label for="filterDepartment">Filter by Department:</label>
+                <select id="filterDepartment" class="filter-select"
+                        [(ngModel)]="selectedDepartment" (change)="onFilterChange()">
+                  <option *ngFor="let dept of departments" [value]="dept">
+                    {{dept}}
+                  </option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterLevel">Filter by Class:</label>
+                <select id="filterLevel" class="filter-select"
+                        [(ngModel)]="selectedClass" (change)="onFilterChange()">
+                  <option *ngFor="let className of classNames" [value]="className">
+                    {{className}}
+                  </option>
+                </select>
+              </div>
+
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text"
+                       placeholder="Search classes..."
+                       class="search-input"
+                       [(ngModel)]="searchTerm"
+                       (keyup.enter)="onSearch()"
+                       (input)="onSearch()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" class="select-all">
+                  </th>
+                  <th>Class</th>
+                  <th>Department</th>
+                  <th>Students</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let class of paginatedClasses">
+                  <td><input type="checkbox" class="row-select"></td>
+                  <td>{{class.level}}</td>
+                  <td>{{class.department}}</td>
+                  <td>{{class.totalStudents}}</td>
+                  <td>
+                    <span class="status-badge" [class.active]="class.canDeactivate" [class.inactive]="!class.canDeactivate">
+                      {{class.canDeactivate ? 'Active' : 'Inactive'}}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn-text edit-btn"
+                              [title]="'Edit ' + class.level"
+                              (click)="openEditModal(class)">
+                        <i class="fas fa-edit"></i> Edit
+                      </button>
+
+                      <button
+                        *ngIf="class.canDeactivate"
+                        class="action-btn-text deactivate-btn"
+                        [title]="'Deactivate ' + class.level"
+                        (click)="deactivateClass(class)">
+                        <i class="fas fa-power-off"></i> Deactivate
+                      </button>
+
+                      <button
+                        *ngIf="!class.canDeactivate"
+                        class="action-btn-text activate-btn"
+                        [title]="'Activate ' + class.level"
+                        (click)="activateClass(class)">
+                        <i class="fas fa-check-circle"></i> Activate
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+
+            <div *ngIf="filteredClasses.length === 0" class="no-results">
+              <i class="fas fa-search no-results-icon"></i>
+              <h3>No classes found</h3>
+              <p>Try adjusting your search or filter criteria</p>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-container">
+            <div class="pagination-info">
+              Showing {{pagination.startIndex}} to {{pagination.endIndex}} of {{pagination.totalItems}} entries
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
+                      (click)="goToPage(1)">
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
+                      (click)="goToPage(pagination.currentPage - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="page-numbers">
+                <button *ngFor="let page of pagination.pages"
+                        class="page-number"
+                        [class.active]="page === pagination.currentPage"
+                        (click)="goToPage(page)">
+                  {{page}}
+                </button>
+              </div>
+
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
+                      (click)="goToPage(pagination.currentPage + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
+                      (click)="goToPage(pagination.totalPages)">
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </div>
+            <div class="items-per-page">
+              <label for="itemsPerPage">Show:</label>
+              <select id="itemsPerPage" [(ngModel)]="pagination.itemsPerPage" (change)="onItemsPerPageChange()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

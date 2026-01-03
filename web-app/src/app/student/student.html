@@ -1,0 +1,268 @@
+<div class="app-container">
+  
+  <div class="sidebar-container">
+    <app-sidebar 
+      (sidebarStateChange)="onSidebarStateChange($event)">
+    </app-sidebar>
+  </div>
+  
+  <!-- Main content -->
+  <div class="main-content-wrapper" [class.collapsed]="isSidebarCollapsed">
+    
+    <app-navbar 
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [pageTitle]="'Student Management'"
+      [currentUser]="currentUser"
+      (logout)="logout()"
+      (profileUpdate)="onProfileUpdate($event)">
+    </app-navbar>
+    
+    <!-- Toast Notification -->
+    <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
+      <div class="toast-icon">
+        <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
+      </div>
+      <div class="toast-message">{{toastMessage}}</div>
+      <button class="toast-close" (click)="hideToast()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- View Student Details Modal -->
+    <div class="modal-overlay" *ngIf="showViewModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Student Details</h2>
+          <button class="modal-close" (click)="closeViewModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="student-details-view">
+            <div class="detail-row">
+              <div class="detail-label">Matricule:</div>
+              <div class="detail-value">{{viewingStudent?.matricule}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">First Name:</div>
+              <div class="detail-value">{{viewingStudent?.firstName}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Last Name:</div>
+              <div class="detail-value">{{viewingStudent?.lastName}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Full Name:</div>
+              <div class="detail-value">{{viewingStudent?.fullName}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Email:</div>
+              <div class="detail-value">{{viewingStudent?.email}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Phone Number:</div>
+              <div class="detail-value">{{viewingStudent?.phoneNumber}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Class:</div>
+              <div class="detail-value">{{viewingStudent?.className}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Department:</div>
+              <div class="detail-value">{{viewingStudent?.department}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Academic Year:</div>
+              <div class="detail-value">{{viewingStudent?.yearName}}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Email Verified:</div>
+              <div class="detail-value">
+                <span [class]="viewingStudent?.emailVerified ? 'status-active' : 'status-inactive'">
+                  {{viewingStudent?.emailVerified ? 'Yes' : 'No'}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showConfirmModal">
+      <div class="modal-container confirm-modal">
+        <div class="modal-header" [class]="'confirm-header-' + confirmModalData.type">
+          <h2 class="modal-title">{{confirmModalData.title}}</h2>
+          <button class="modal-close" (click)="cancelAction()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body confirm-body">
+          <div class="confirm-icon">
+            <i [class]="
+              confirmModalData.type === 'logout' ? 'fas fa-sign-out-alt' :
+              'fas fa-info-circle'
+            "></i>
+          </div>
+          <h3 class="confirm-message">{{confirmModalData.message}}</h3>
+        </div>
+        <div class="modal-footer confirm-footer">
+          <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
+            {{confirmModalData.cancelText}}
+          </button>
+          <button class="btn confirm-action" 
+                  [class]="'confirm-' + confirmModalData.type" 
+                  (click)="confirmAction()">
+            {{confirmModalData.confirmText}}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content section -->
+    <main class="main-content">
+      <div class="content-container">
+       
+        <div class="table-actions-header">
+          <div class="actions-right">
+            <button class="action-btn export-btn" (click)="exportTable()">
+              <i class="fas fa-file-export"></i> Export Students
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+          
+          <div class="table-header">
+            <div class="table-filters">
+              <div class="filter-group">
+                <label for="filterYear">Filter by Year:</label>
+                <select id="filterYear" class="filter-select" 
+                        [(ngModel)]="selectedYear" (change)="onFilterChange()">
+                  <option value="All">All Years</option>
+                  <option *ngFor="let year of years" [value]="year">
+                    {{year}}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="filter-group">
+                <label for="filterClass">Filter by Class:</label>
+                <select id="filterClass" class="filter-select" 
+                        [(ngModel)]="selectedClass" (change)="onFilterChange()">
+                  <option value="All">All Classes</option>
+                  <option *ngFor="let class of classes" [value]="class">
+                    {{class}}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" 
+                       placeholder="Search students..." 
+                       class="search-input"
+                       [(ngModel)]="searchTerm"
+                       (keyup.enter)="onSearch()"
+                       (input)="onSearch()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Matricule</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                  <th>Phone Number</th>
+                  <th>Class</th>
+                  <th>Academic Year</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let student of paginatedStudents">
+                  <td>{{student.matricule}}</td>
+                  <td>{{student.firstName}}</td>
+                  <td>{{student.lastName}}</td>
+                  <td>{{student.email}}</td>
+                  <td>{{student.phoneNumber}}</td>
+                  <td>{{student.className}}</td>
+                  <td>{{student.yearName}}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button 
+                        class="action-btn-text view-btn" 
+                        [title]="'View ' + student.fullName + ' details'" 
+                        (click)="viewStudent(student)">
+                        <i class="fas fa-eye"></i> View
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div *ngIf="filteredStudents.length === 0" class="no-results">
+              <i class="fas fa-search no-results-icon"></i>
+              <h3>No students found</h3>
+              <p>Try adjusting your search or filter criteria</p>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-container">
+            <div class="pagination-info">
+              Showing {{pagination.startIndex}} to {{pagination.endIndex}} of {{pagination.totalItems}} entries
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+                      (click)="goToPage(1)">
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+                      (click)="goToPage(pagination.currentPage - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              
+              <div class="page-numbers">
+                <button *ngFor="let page of pagination.pages" 
+                        class="page-number" 
+                        [class.active]="page === pagination.currentPage"
+                        (click)="goToPage(page)">
+                  {{page}}
+                </button>
+              </div>
+              
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+                      (click)="goToPage(pagination.currentPage + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+                      (click)="goToPage(pagination.totalPages)">
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </div>
+            <div class="items-per-page">
+              <label for="itemsPerPage">Show:</label>
+              <select id="itemsPerPage" [(ngModel)]="pagination.itemsPerPage" (change)="onItemsPerPageChange()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

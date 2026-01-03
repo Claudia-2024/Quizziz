@@ -2,6 +2,7 @@ import Course from "../models/course.js";
 import Class from "../models/class.js";
 import ClassCourse from "../models/classCourse.js";
 import CourseDto from "../dto/courseDto.js";
+import Student from "../models/student.js";
 
 async function getAllCourses(req, res) {
     try {
@@ -65,6 +66,33 @@ async function getCourseByCode(req, res) {
         }
     } catch (error){
         console.error("Error Finding Course: ", error);
+        return res.status(500).json({error: "Internal Server Error"});
+    }
+}
+
+async function getCoursesForConnectedStudent(req, res) {
+    try {
+        const matricule = req.params.matricule;
+        console.log("reached here")
+
+        const courses = await Course.findAll({
+            include: [
+                {
+                    model: Student,
+                    where: { matricule: matricule },
+                    attributes: [],
+                    required: true
+                }
+            ]
+        });
+        if (courses){
+            return res.status(200).json(courses);
+        }else{
+            return res.status(404).json("No Courses Found for the Student");
+        }
+
+    }catch (error) {
+        console.error("Error Fetching Courses for Student: ", error);
         return res.status(500).json({error: "Internal Server Error"});
     }
 }
@@ -158,4 +186,4 @@ async function deleteCourse(req, res) {
 }
 
 
-export default {getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode};
+export default {getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode, getCoursesForConnectedStudent};

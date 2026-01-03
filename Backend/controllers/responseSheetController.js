@@ -1,4 +1,3 @@
-import e from "express";
 import ResponseSheet from "../models/responseSheet.js";
 
 async function getAllResponseSheets(req, res){
@@ -27,6 +26,29 @@ async function getResponseSheetsByEvaluationId(req, res){
         }
     }catch(error){
         console.log("Error Fetching Response Sheets by Evaluation: ", error);
+        return res.status(500).json({error: "Internal Server Error"});
+    }
+}
+
+async function getScoreByEvaluation(req, res){
+    try{
+        const responseSheets = await ResponseSheet.findAll({
+            where: {
+                matricule: req.student.matricule,
+            },
+            include: [{
+                model: Evaluation,
+            }]
+        });
+
+        if (responseSheets) {
+            const dto = responseSheets.map(rs => new ScoreDto(rs));
+            return res.status(200).json(dto);
+        } else {
+            return res.status(404).json({ error: "No Response Sheets Found" });
+        }
+    }catch(error){
+        console.log("Error Fetching Response Sheets by Matricule", error);
         return res.status(500).json({error: "Internal Server Error"});
     }
 }
@@ -105,5 +127,6 @@ export default{
     getResponseSheetsByEvaluationId,
     createResponseSheet,
     updateResponseSheet,
-    findResponseSheetByMatriculeAndEvaluationId
+    findResponseSheetByMatriculeAndEvaluationId,
+    getScoreByEvaluation
 };

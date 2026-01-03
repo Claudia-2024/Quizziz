@@ -1,0 +1,809 @@
+<div class="app-container">
+
+  <div class="sidebar-container">
+    <app-sidebar
+      (sidebarStateChange)="onSidebarStateChange($event)">
+    </app-sidebar>
+  </div>
+
+  <!-- Main content  -->
+  <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280">
+
+    <app-navbar
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [pageTitle]="'Evaluation Management'"
+      [currentUser]="currentUser"
+      (logout)="logout()"
+      (profileUpdate)="onProfileUpdate($event)">
+    </app-navbar>
+
+
+    <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
+      <div class="toast-icon">
+        <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
+      </div>
+      <div class="toast-message">{{toastMessage}}</div>
+      <button class="toast-close" (click)="hideToast()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Add Evaluation Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal">
+      <div class="modal-container" style="max-width: 700px;">
+        <div class="modal-header">
+          <h2 class="modal-title">Create New Evaluation</h2>
+          <button class="modal-close" (click)="closeAddModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="saveEvaluation()">
+            <div class="form-group">
+              <label for="evalDate">Date *</label>
+              <input type="date" id="evalDate" class="form-control"
+                     [(ngModel)]="newEvaluation.publishedDate"
+                     [ngModelOptions]="{standalone: true}" required>
+            </div>
+           <div class="form-group">
+            <label for="evalType">Evaluation Type *</label>
+            <select id="evalType" class="form-control"
+                    [(ngModel)]="newEvaluation.type"
+                    [ngModelOptions]="{standalone: true}" required>
+              <option value="">Select Type</option>
+              <option *ngFor="let type of evalTypes" [value]="type">
+                {{type}}
+              </option>
+            </select>
+          </div>
+
+            <div class="form-group">
+              <label for="evalCourse">Course Code *</label>
+              <select id="evalCourse" class="form-control"
+                      [(ngModel)]="newEvaluation.courseCode"
+                      [ngModelOptions]="{standalone: true}" required>
+                <option value="">Select Course Code</option>
+                <option *ngFor="let course of availableCourses" [value]="course.code">
+                  {{course.code}}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="evalStartTime">Start Time *</label>
+              <input type="time" id="evalStartTime" class="form-control"
+                     [(ngModel)]="newEvaluation.startTime"
+                     [ngModelOptions]="{standalone: true}" required>
+            </div>
+            <div class="form-group">
+              <label for="evalEndTime">End Time *</label>
+              <input type="time" id="evalEndTime" class="form-control"
+                     [(ngModel)]="newEvaluation.endTime"
+                     [ngModelOptions]="{standalone: true}" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveEvaluation()">
+            <i class="fas fa-save"></i> Create Evaluation
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Questions Modal -->
+    <div class="modal-overlay" *ngIf="showQuestionsModal">
+      <div class="modal-container" style="max-width: 900px; max-height: 90vh;">
+        <div class="modal-header">
+          <h2 class="modal-title">Add Questions to Evaluation: {{selectedEvaluation?.courseCode || 'New Evaluation'}}</h2>
+          <button class="modal-close" (click)="closeQuestionsModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <!-- Question Import Section -->
+          <div class="question-import-section" style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; color: #331424;">Import Questions from Excel/CSV File</h4>
+
+            <div class="file-upload-container" style="margin-bottom: 20px;">
+              <input type="file" id="importExcel" [accept]="ACCEPTED_QUESTION_TYPES"
+                    (change)="onExcelFileSelected($event)"
+                    class="file-input">
+              <label for="importExcel" class="file-upload-label">
+                <i class="fas fa-file-excel" style="color: #1D6F42;"></i>
+                <span>{{excelFileName || 'Upload Excel/CSV File (.csv, .xlsx, .xls)'}}</span>
+              </label>
+            </div>
+
+            <!-- File info display -->
+            <div *ngIf="excelFile && questionFileTypeInfo" class="file-info" style="margin-bottom: 15px;">
+              <div class="file-info-content" style="background: #f8f9fa; padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 10px;">
+                <span class="file-icon">
+                  {{ questionFileTypeInfo.type === 'csv' ? '📄' : '📊' }}
+                </span>
+                <div class="file-details">
+                  <strong style="display: block; margin-bottom: 2px;">{{ excelFileName }}</strong>
+                  <small class="text-muted">
+                    {{ questionFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} •
+                    {{ (excelFile.size / 1024).toFixed(1) }} KB
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div *ngIf="isImporting" class="progress-section">
+              <div class="progress-label">
+                Processing file... {{importProgress}}%
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="importProgress"></div>
+              </div>
+            </div>
+
+            <!-- Import Results -->
+            <div *ngIf="importResult" class="results-section" style="margin-bottom: 15px;">
+              <div [class]="importResult.success ? 'result-success' : 'result-error'" style="padding: 15px; border-radius: 6px;">
+                <h4 style="margin: 0 0 10px 0;">{{importResult.success ? '✅ File Processed' : '❌ Processing Failed'}}</h4>
+                <p style="margin: 0;">{{importResult.message}}</p>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+              <button class="btn btn-secondary" (click)="downloadQuestionTemplate()">
+                <i class="fas fa-download"></i> Download Excel Template
+              </button>
+              <button class="btn btn-secondary" (click)="openQuestionEditor()" style="margin-right: 10px;">
+                <i class="fas fa-plus"></i> Add Question Manually
+              </button>
+              <button class="btn btn-primary" (click)="processExcelImport()" [disabled]="!excelFile || isImporting">
+                <i class="fas fa-file-import"></i> Process File
+              </button>
+            </div>
+
+            <!-- Template Format Info -->
+            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; font-size: 12px;">
+              <strong>Expected Format:</strong>
+              <ul style="margin: 5px 0 0 15px; padding: 0;">
+                <li>Required columns: <code>Question</code>, <code>Type</code> (MCQ/OPEN/TRUE_FALSE), <code>Points</code></li>
+                <li>For MCQ: Add columns <code>ChoiceA</code>, <code>ChoiceB</code>, etc. and <code>CorrectAnswer</code> (A, B, C, etc.)</li>
+                <li>For TRUE_FALSE: Add columns <code>ChoiceA</code> (True) and <code>ChoiceB</code> (False)</li>
+                <li>For OPEN: Just <code>Question</code>, <code>Type</code> (OPEN), and <code>Points</code></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Imported Questions Preview -->
+          <div *ngIf="importPreviewData.length > 0" class="preview-section" style="margin-top: 25px;">
+            <h4 style="margin-bottom: 15px; color: #331424;">
+              Imported Questions Preview ({{importPreviewData.length}} questions)
+              <button class="btn btn-sm btn-success" (click)="addAllImportedQuestions()" style="float: right;">
+                <i class="fas fa-plus-circle"></i> Add All
+              </button>
+            </h4>
+            <div class="preview-table" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
+              <div *ngFor="let question of importPreviewData; let i = index"
+                  class="question-item"
+                  style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #FD2A9B;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <h5 style="margin: 0; color: #331424;">
+                    Q{{question.order || i+1}}. {{question.text}}
+                    <span style="font-size: 12px; color: #666; margin-left: 10px;">
+                      ({{question.type}} - {{question.points}} points)
+                    </span>
+                  </h5>
+                  <div>
+                    <button class="btn btn-sm" (click)="editImportedQuestion(i)" style="margin-right: 5px; background: #331424; color: white;">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" (click)="removeImportedQuestion(i)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="question.type === 'MCQ' && question.choices" style="margin-left: 20px;">
+                  <div *ngFor="let choice of question.choices"
+                      style="display: flex; align-items: center; margin: 5px 0;">
+                    <span style="min-width: 20px;">{{getCharFromNumber(choice.order)}}.</span>
+                    <span style="margin-left: 10px;">{{choice.text}}</span>
+                    <span *ngIf="choice.isCorrect" style="margin-left: 10px; color: #28a745;">
+                      <i class="fas fa-check-circle"></i> Correct
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="question.type === 'OPEN'" style="margin-left: 20px;">
+                  <span style="color: #666; font-style: italic;">Open-ended question</span>
+                </div>
+                <div *ngIf="question.type === 'TRUE_FALSE' && question.choices" style="margin-left: 20px;">
+                  <div *ngFor="let choice of question.choices"
+                      style="display: flex; align-items: center; margin: 5px 0;">
+                    <span style="min-width: 20px;">{{choice.order}}.</span>
+                    <span style="margin-left: 10px;">{{choice.text}}</span>
+                    <span *ngIf="choice.isCorrect" style="margin-left: 10px; color: #28a745;">
+                      <i class="fas fa-check-circle"></i> Correct
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question List -->
+          <div class="question-list-section" *ngIf="selectedEvaluation && selectedEvaluation.questions && selectedEvaluation.questions.length > 0">
+            <h4 style="margin-bottom: 15px; color: #331424;">
+              Current Questions ({{selectedEvaluation?.questions?.length || 0}})
+            </h4>
+            <div class="questions-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
+              <div *ngFor="let question of selectedEvaluation?.questions || []; let i = index"
+                   class="question-item"
+                   style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #331424;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <h5 style="margin: 0; color: #331424;">
+                    Q{{question?.order || i+1}}. {{question?.text}}
+                    <span style="font-size: 12px; color: #666; margin-left: 10px;">
+                      ({{question?.type || 'MCQ'}} - {{question?.points || 0}} points)
+                    </span>
+                  </h5>
+                  <div>
+                    <button class="btn btn-sm" (click)="editQuestion(i)" style="margin-right: 5px; background: #331424; color: white;">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" (click)="deleteQuestion(i)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div *ngIf="question?.type === 'MCQ' && question?.choices" style="margin-left: 20px;">
+                  <div *ngFor="let choice of question.choices || []"
+                       style="display: flex; align-items: center; margin: 5px 0;">
+                    <span style="min-width: 20px;">{{getCharFromNumber(choice.order)}}.</span>
+                    <span style="margin-left: 10px;">{{choice?.text}}</span>
+                    <span *ngIf="choice?.isCorrect" style="margin-left: 10px; color: #28a745;">
+                      <i class="fas fa-check-circle"></i> Correct
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="question?.type === 'TRUE_FALSE' && question?.choices" style="margin-left: 20px;">
+                  <div *ngFor="let choice of question.choices || []"
+                       style="display: flex; align-items: center; margin: 5px 0;">
+                    <span style="min-width: 20px;">{{choice?.order || 1}}.</span>
+                    <span style="margin-left: 10px;">{{choice?.text}}</span>
+                    <span *ngIf="choice?.isCorrect" style="margin-left: 10px; color: #28a745;">
+                      <i class="fas fa-check-circle"></i> Correct
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div *ngIf="(!selectedEvaluation || !selectedEvaluation.questions || selectedEvaluation.questions.length === 0) && importPreviewData.length === 0"
+               class="no-questions" style="text-align: center; padding: 40px; color: #666;">
+            <i class="fas fa-question-circle" style="font-size: 48px; margin-bottom: 15px; color: #ddd;"></i>
+            <h4>No questions added yet</h4>
+            <p>Import questions from an Excel/CSV file or add them manually</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeQuestionsModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveEvaluationWithQuestions()">
+            <i class="fas fa-save"></i> Save Evaluation with Questions
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Editor Modal -->
+    <div class="modal-overlay" *ngIf="showQuestionEditorModal">
+      <div class="modal-container" style="max-width: 700px;">
+        <div class="modal-header">
+          <h2 class="modal-title">{{editingQuestionIndex >= 0 ? 'Edit' : 'Add'}} Question</h2>
+          <button class="modal-close" (click)="closeQuestionEditor()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="questionText">Question Text *</label>
+            <textarea id="questionText" class="form-control"
+                     [(ngModel)]="currentQuestion.text"
+                     [ngModelOptions]="{standalone: true}"
+                     rows="3" placeholder="Enter the question..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="questionType">Question Type *</label>
+            <select id="questionType" class="form-control"
+                    [(ngModel)]="currentQuestion.type"
+                    [ngModelOptions]="{standalone: true}"
+                    (change)="onQuestionTypeChange()" required>
+              <option value="MCQ">Multiple Choice (MCQ)</option>
+              <option value="OPEN">Open Ended</option>
+              <option value="TRUE_FALSE">True/False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="questionPoints">Points *</label>
+            <input type="number" id="questionPoints" class="form-control"
+                   [(ngModel)]="currentQuestion.points"
+                   [ngModelOptions]="{standalone: true}"
+                   min="0" max="100" required>
+          </div>
+          <div class="form-group">
+            <label for="questionOrder">Order *</label>
+            <input type="number" id="questionOrder" class="form-control"
+                   [(ngModel)]="currentQuestion.order"
+                   [ngModelOptions]="{standalone: true}"
+                   min="1" required>
+          </div>
+
+          <!-- Choices for MCQ and True/False -->
+          <div *ngIf="currentQuestion.type === 'MCQ' || currentQuestion.type === 'TRUE_FALSE'"
+               class="choices-section" style="margin-top: 20px;">
+            <h4 style="margin-bottom: 15px; color: #331424;">Choices</h4>
+            <div *ngFor="let choice of currentQuestion.choices || []; let i = index"
+                 class="choice-item"
+                 style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+              <input type="text" [(ngModel)]="choice.text"
+                     [ngModelOptions]="{standalone: true}"
+                     placeholder="Choice text"
+                     style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <input type="number" [(ngModel)]="choice.order"
+                     [ngModelOptions]="{standalone: true}"
+                     min="1" style="width: 60px; padding: 8px; text-align: center;">
+              <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="radio" [name]="'correctChoice'"
+                       [checked]="choice.isCorrect"
+                       (change)="setCorrectChoice(i)">
+                Correct
+              </label>
+              <button class="btn btn-sm btn-secondary" (click)="removeChoice(i)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <button class="btn btn-sm" (click)="addChoice()" style="margin-top: 10px; background: #331424; color: white;">
+              <i class="fas fa-plus"></i> Add Choice
+            </button>
+          </div>
+
+          <div *ngIf="currentQuestion.type === 'OPEN'" class="open-ended-section" style="margin-top: 20px;">
+            <p style="color: #666; font-style: italic;">
+              Open-ended questions will be manually graded after submission.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeQuestionEditor()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveCurrentQuestion()">
+            <i class="fas fa-save"></i> Save Question
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Performance Modal -->
+    <div class="modal-overlay" *ngIf="showPerformanceModal">
+      <div class="modal-container" style="max-width: 900px;">
+        <div class="modal-header">
+          <h2 class="modal-title">Evaluation Performance: {{selectedEvaluation?.courseCode || 'Evaluation'}}</h2>
+          <button class="modal-close" (click)="closePerformanceModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Performance Summary -->
+          <div class="performance-summary" style="margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #331424;">{{performanceData?.totalStudents || 0}}</div>
+                <div style="font-size: 12px; color: #666;">Total Students</div>
+              </div>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #28a745;">{{performanceData?.averageScore || 0}}%</div>
+                <div style="font-size: 12px; color: #666;">Average Score</div>
+              </div>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #dc3545;">{{performanceData?.passRate || 0}}%</div>
+                <div style="font-size: 12px; color: #666;">Pass Rate</div>
+              </div>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #FD2A9B;">{{performanceData?.completionRate || 0}}%</div>
+                <div style="font-size: 12px; color: #666;">Completion Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Student Performance Table -->
+          <div class="performance-table">
+            <h4 style="margin-bottom: 15px; color: #331424;">Student Results</h4>
+            <div style="overflow-x: auto; max-height: 300px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                  <tr>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Student ID</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Name</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Score</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Percentage</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Status</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #eaeaea; text-align: left;">Time Taken</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let student of performanceData?.students || []"
+                      style="border-bottom: 1px solid #f0f0f0;">
+                    <td style="padding: 10px;">{{student.id}}</td>
+                    <td style="padding: 10px;">{{student.name}}</td>
+                    <td style="padding: 10px;">{{student.score}}</td>
+                    <td style="padding: 10px;">{{student.percentage}}%</td>
+                    <td style="padding: 10px;">
+                      <span [style]="'color: ' + (student.status === 'Passed' ? '#28a745' : '#dc3545')">
+                        {{student.status}}
+                      </span>
+                    </td>
+                    <td style="padding: 10px;">{{student.timeTaken}} min</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closePerformanceModal()">Close</button>
+          <button class="btn btn-primary" (click)="exportPerformance()">
+            <i class="fas fa-file-export"></i> Export Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Evaluations Modal -->
+    <div class="modal-overlay" *ngIf="showImportModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Import Evaluations</h2>
+          <button class="modal-close" (click)="closeImportModal()" [disabled]="isEvalImporting">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="form-group">
+            <label for="importEvalFile">Select File *</label>
+            <div class="file-upload-container">
+              <input type="file" id="importEvalFile"
+                    [accept]="ACCEPTED_EVAL_TYPES"
+                    (change)="onEvalFileSelected($event)"
+                    [disabled]="isEvalImporting"
+                    class="file-input">
+              <label for="importEvalFile" class="file-upload-label">
+                <i class="fas fa-file-upload"></i>
+                <span>{{importEvalFileName || 'Choose CSV or Excel file'}}</span>
+              </label>
+            </div>
+            <small class="form-text">
+              Supported formats: CSV, XLS, XLSX, XLSM, XLSB, ODS, XLT, XLTX, XLTM, XLAM<br>
+              For CSV/Excel: Must have columns: publishedDate, type, startTime, endTime, courseCode<br>
+              <a href="javascript:void(0)" (click)="downloadEvalTemplate()" style="color: #331424; text-decoration: underline;">Download Excel template</a>
+            </small>
+          </div>
+
+          <!-- File info display -->
+          <div *ngIf="importEvalFile && evalFileTypeInfo" class="file-info">
+            <div class="file-info-content">
+              <span class="file-icon">
+                {{ evalFileTypeInfo.type === 'csv' ? '📄' : '📊' }}
+              </span>
+              <div class="file-details">
+                <strong>{{ importEvalFileName }}</strong>
+                <small class="text-muted">
+                  {{ evalFileTypeInfo.type === 'csv' ? 'CSV File' : 'Excel File' }} •
+                  {{ (importEvalFile.size / 1024).toFixed(1) }} KB
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- CSV/Excel Template Preview -->
+          <div class="template-preview" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #331424;">
+            <h5 style="margin-bottom: 10px; color: #331424;">CSV/Excel Template Format:</h5>
+            <pre style="background: white; padding: 10px; border-radius: 4px; font-size: 12px; overflow: auto; max-height: 200px;">
+publishedDate,type,startTime,endTime,courseCode
+2025-12-30,Resit,08:00:00,10:00:00,ISI4217
+2025-12-31,Mid term,09:00:00,11:00:00,WEB101
+2026-01-05,Normal session,10:00:00,12:00:00,MAT201
+            </pre>
+            <small style="color: #666;">
+              Note: courseCode should match existing course codes from the system.
+            </small>
+          </div>
+
+          <!-- Preview Section -->
+          <div *ngIf="evalImportPreview.length > 0" class="preview-section" style="margin-top: 25px;">
+            <h4 style="margin-bottom: 15px; color: #331424;">
+              Preview ({{evalImportPreview.length}} evaluations)
+            </h4>
+            <div class="preview-table" style="max-height: 300px; overflow-y: auto; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px;">
+              <div *ngFor="let evaluation of evalImportPreview; let i = index"
+                   class="eval-item"
+                   style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #FD2A9B;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <h5 style="margin: 0; color: #331424;">
+                    {{evaluation.courseCode}} - {{evaluation.type}}
+                  </h5>
+                  <span style="font-size: 12px; color: #666;">
+                    {{evaluation.publishedDate}}
+                  </span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 13px;">
+                  <div><strong>Time:</strong> {{evaluation.startTime}} - {{evaluation.endTime}}</div>
+                  <div><strong>Questions:</strong> {{evaluation.questions?.length || 0}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div *ngIf="isEvalImporting" class="progress-section">
+            <div class="progress-label">
+              Importing... {{evalImportProgress}}%
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="evalImportProgress"></div>
+            </div>
+          </div>
+
+
+          <div *ngIf="evalImportResult" class="results-section">
+            <div [class]="evalImportResult.success ? 'result-success' : 'result-error'">
+              <h4>{{evalImportResult.success ? '✅ Import Successful' : '❌ Import Failed'}}</h4>
+              <p>{{evalImportResult.message}}</p>
+              <p><strong>Imported:</strong> {{evalImportResult.importedCount}} | <strong>Failed:</strong> {{evalImportResult.failedCount}}</p>
+
+              <div *ngIf="evalImportResult.errors && evalImportResult.errors.length > 0" class="error-list">
+                <h5>Errors:</h5>
+                <ul>
+                  <li *ngFor="let error of evalImportResult.errors">{{error}}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="isEvalImporting">
+            Cancel
+          </button>
+          <button class="btn btn-primary" (click)="executeEvalImport()"
+                  [disabled]="!importEvalFile || isEvalImporting">
+            <i class="fas fa-file-import"></i> {{isEvalImporting ? 'Importing...' : 'Import'}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showConfirmModal">
+      <div class="modal-container confirm-modal">
+        <div class="modal-header" [class]="'confirm-header-' + confirmModalData.type">
+          <h2 class="modal-title">{{confirmModalData.title}}</h2>
+          <button class="modal-close" (click)="cancelAction()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body confirm-body">
+          <div class="confirm-icon">
+            <i [class]="
+              confirmModalData.type === 'activate' ? 'fas fa-check-circle' :
+              confirmModalData.type === 'deactivate' ? 'fas fa-power-off' :
+              confirmModalData.type === 'logout' ? 'fas fa-sign-out-alt' :
+              'fas fa-info-circle'
+            "></i>
+          </div>
+          <h3 class="confirm-message" [innerHTML]="confirmModalData.message"></h3>
+          <p *ngIf="confirmModalData.type === 'logout'" class="confirm-warning">
+            You will be redirected to the login page.
+          </p>
+        </div>
+        <div class="modal-footer confirm-footer">
+          <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
+            {{confirmModalData.cancelText}}
+          </button>
+          <button class="btn confirm-action"
+                  [class]="'confirm-' + confirmModalData.type"
+                  (click)="confirmAction()">
+            {{confirmModalData.confirmText}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!--  Content Section -->
+    <main class="main-content">
+      <div class="content-container">
+
+        <div class="table-actions-header">
+          <div class="actions-right">
+            <button class="action-btn import-btn" (click)="openImportModal()">
+              <i class="fas fa-file-import"></i> Import Evaluations
+            </button>
+            <button class="action-btn add-btn" (click)="openAddModal()">
+              <i class="fas fa-plus"></i> Create Evaluation
+            </button>
+            <button class="action-btn export-btn" (click)="exportTable()">
+              <i class="fas fa-file-export"></i> Export Evaluations
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+
+          <div class="table-header">
+            <div class="table-filters">
+             <div class="filter-group">
+            <label for="filterType">Filter by Type:</label>
+            <select id="filterType" class="filter-select"
+                    [(ngModel)]="selectedType" (change)="onFilterChange()">
+              <option value="All">All Types</option>
+              <option *ngFor="let type of evalTypes" [value]="type">
+                {{type}}
+              </option>
+            </select>
+          </div>
+
+              <div class="filter-group">
+                <label for="filterCourse">Filter by Course:</label>
+                <select id="filterCourse" class="filter-select"
+                        [(ngModel)]="selectedCourse" (change)="onFilterChange()">
+                  <option value="All">All Courses</option>
+                  <option *ngFor="let course of availableCourses" [value]="course.code">
+                    {{course.code}}
+                  </option>
+                </select>
+              </div>
+
+                      <div class="filter-group">
+          <label for="filterStatus">Filter by Status:</label>
+          <select id="filterStatus" class="filter-select"
+                  [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+            <option *ngFor="let status of evalStatuses" [value]="status">
+              {{ getStatusDisplayText(status) }}
+            </option>
+          </select>
+        </div>
+
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text"
+                       placeholder="Search by course code..."
+                       class="search-input"
+                       [(ngModel)]="searchTerm"
+                       (keyup.enter)="onSearch()"
+                       (input)="onSearch()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" class="select-all">
+                  </th>
+                  <th>Course Code</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Status</th>
+                  <th>Questions</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let evalItem of paginatedEvaluations">
+                  <td><input type="checkbox" class="row-select"></td>
+                  <td>{{evalItem.courseCode}}</td>
+                  <td>
+                    <span class="eval-type-badge" [ngClass]="getEvalTypeClass(evalItem.type)">
+                      {{evalItem.type}}
+                    </span>
+                  </td>
+                  <td>{{evalItem.publishedDate}}</td>
+                  <td>{{evalItem.startTime}}</td>
+                  <td>{{evalItem.endTime}}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(evalItem.status)">
+                      {{getStatusText(evalItem.status)}}
+                    </span>
+                  </td>
+                  <td>{{evalItem.questions?.length || 0}}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn-text manage-btn"
+                              [title]="'Manage questions for ' + evalItem.courseCode"
+                              (click)="manageQuestions(evalItem)"
+                              [disabled]="!canManageQuestions(evalItem)">
+                        <i class="fas fa-question-circle"></i> Questions
+                      </button>
+                      <button class="action-btn-text performance-btn"
+                              [title]="'View performance for ' + evalItem.courseCode"
+                              (click)="viewPerformance(evalItem)">
+                        <i class="fas fa-chart-line"></i> Performance
+                      </button>
+                      <button class="action-btn-text edit-btn"
+                              [title]="'Edit evaluation for ' + evalItem.courseCode"
+                              (click)="editEvaluation(evalItem)"
+                              [disabled]="!canEditEvaluation(evalItem)">
+                        <i class="fas fa-edit"></i> Edit
+                      </button>
+                      <button class="action-btn-text delete-btn"
+                              [title]="'Delete evaluation for ' + evalItem.courseCode"
+                              (click)="deleteEvaluation(evalItem)"
+                              [disabled]="!canEditEvaluation(evalItem)">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+
+            <div *ngIf="filteredEvaluations.length === 0" class="no-results">
+              <i class="fas fa-search no-results-icon"></i>
+              <h3>No evaluations found</h3>
+              <p>Try adjusting your search or filter criteria</p>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-container">
+            <div class="pagination-info">
+              Showing {{pagination.startIndex}} to {{pagination.endIndex}} of {{pagination.totalItems}} entries
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
+                      (click)="goToPage(1)">
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
+                      (click)="goToPage(pagination.currentPage - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="page-numbers">
+                <button *ngFor="let page of pagination.pages"
+                        class="page-number"
+                        [class.active]="page === pagination.currentPage"
+                        (click)="goToPage(page)">
+                  {{page}}
+                </button>
+              </div>
+
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
+                      (click)="goToPage(pagination.currentPage + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
+                      (click)="goToPage(pagination.totalPages)">
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </div>
+            <div class="items-per-page">
+              <label for="itemsPerPage">Show:</label>
+              <select id="itemsPerPage" [(ngModel)]="pagination.itemsPerPage" (change)="onItemsPerPageChange()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="login-container" 
+     style="background-image: url('assets/quiz.jpg');">
+    <div class="login-card">
+        <div class="logo-container">
+            <div class="logo">
+                 <img src="assets/logo.png" alt="Quizziz Logo" class="logo-img" style="width: 95px; height: 95px; object-fit: contain; border-radius: 50%; background: #F2EED5; padding: 4px; flex-shrink: 0;">
+            </div>
+        </div>
+        
+        <h1 class="login-title">LOGIN</h1>
+        
+        
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-control" 
+                        formControlName="email"
+                        placeholder="Enter your email"
+                        [ngClass]="{'error': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}">
+                </div>
+                <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" 
+                     class="error-message">
+                    <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
+                    <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+                </div>
+            </div>
+            
+            <div class="form-group password-input">
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input 
+                        [type]="showPassword ? 'text' : 'password'" 
+                        id="password" 
+                        class="form-control" 
+                        formControlName="password"
+                        placeholder="Enter your password"
+                        [ngClass]="{'error': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
+                    <button type="button" class="password-toggle" (click)="togglePasswordVisibility()">
+                        
+                        <i *ngIf="!showPassword" class="fas fa-eye" title="Show password"></i>
+                        <i *ngIf="showPassword" class="fas fa-eye-slash" title="Hide password"></i>
+                    </button>
+                </div>
+                <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
+                     class="error-message">
+                    <span *ngIf="loginForm.get('password')?.errors?.['required']">Password is required</span>
+                    <span *ngIf="loginForm.get('password')?.errors?.['minlength']">
+                        Password must be at least 6 characters
+                    </span>
+                </div>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="remember" formControlName="rememberMe">
+                <label for="remember">Remember me</label>
+            </div>
+            
+            <button type="submit" class="login-btn" [disabled]="loginForm.invalid || isLoading">
+                <span>{{ isLoading ? 'Processing...' : 'Login Here' }}</span>
+                <div class="arrow-circle">
+                    <i *ngIf="!isLoading" class="fas fa-arrow-right"></i>
+                    <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+                </div>
+            </button>
+        </form>
+    </div>
+</div>

@@ -1,5 +1,6 @@
 import express from 'express';
 import courseController from '../controllers/courseController.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const courseRoutes = express.Router();
 
@@ -11,6 +12,9 @@ courseRoutes.get("/:courseCode", courseController.getCourseByCode);
 
 //requires course as request body
 courseRoutes.post("/:classId", courseController.createCourse);
+
+// Get courses for connected student (by matricule from JWT)
+courseRoutes.get("/student", authenticateToken, courseController.getCoursesForConnectedStudent);
 
 //requires courseCode as path parameter and updated course in request body
 courseRoutes.put("/update/:courseCode", courseController.updateCourse);

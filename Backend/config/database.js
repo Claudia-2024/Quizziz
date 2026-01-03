@@ -11,13 +11,21 @@ import { Sequelize } from "sequelize";
 // }).promise()
 
 //Creating an instance of sequelize(which communicates with the database)
+// const sequelize = new Sequelize({
+//     database: 'postgres',
+//     username: 'postgres',
+//     password: 'mango205',
+//     host: 'localhost',
+//     port: 5432,
+//     dialect: 'postgres',
+// });
 const sequelize = new Sequelize({
-    database: 'postgres',
-    username: 'postgres',
-    password: 'mango205',
+    database: 'quizziz_db',
+    username: 'root',
+    password: 'claudia@2603',
     host: 'localhost',
-    port: 5432,
-    dialect: 'postgres',
+    port: 3308,
+    dialect: 'mysql',
 });
 
 //Test the database connection

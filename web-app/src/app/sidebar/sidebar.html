@@ -1,0 +1,81 @@
+<div class="sidebar" [class.collapsed]="isCollapsed" [class.mobile-open]="isMobileOpen">
+ 
+  <button class="sidebar-toggle" (click)="toggleSidebar()">
+    {{ isCollapsed ? '→' : '←' }}
+  </button>
+  
+  
+  <div class="logo-section">
+    <img src="assets/logo.png" alt="Quizziz Logo" class="logo-img">
+    <h2 class="logo-text">Quizziz</h2>
+  </div>
+
+  
+  <nav class="nav-menu">
+    
+   
+    <a class="nav-button" routerLink="/dashboard" routerLinkActive="active" 
+       [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+      <i class="icon">📊</i>
+      <span class="dash">Dashboard</span>
+    </a>
+    
+    
+     <div class="dropdown-section">
+      <button class="nav-button dropdown-toggle" (click)="toggleDropdown('courses')">
+        <i class="icon">📚</i>
+        <span>Course</span>
+        <i class="arrow" [class.rotated]="isDropdownOpen['courses']">▼</i>
+      </button>
+      
+      <div class="dropdown-menu" [class.open]="isDropdownOpen['courses']">
+        <a class="dropdown-item" routerLink="/courses" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+          <i class="icon">📋</i>
+          Manage Course
+        </a>
+        <a class="dropdown-item" routerLink="/test" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+          <i class="icon">✏️</i>
+          Manage Test
+        </a>
+      </div>
+    </div>
+     
+    
+     <div class="dropdown-section">
+      <button class="nav-button dropdown-toggle" (click)="toggleDropdown('students')">
+        <i class="icon">👨‍🎓</i>
+        <span>Student</span>
+        <i class="arrow" [class.rotated]="isDropdownOpen['students']">▼</i>
+      </button>
+      
+      <div class="dropdown-menu" [class.open]="isDropdownOpen['students']">
+        <a class="dropdown-item" routerLink="/student" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+          <i class="icon">👥</i>
+          Manage Student
+        </a>
+        <a class="dropdown-item" routerLink="/class" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+          <i class="icon">🏫</i>
+          Manage Classes
+        </a>
+      </div>
+    </div>
+
+    
+    <a class="nav-button" routerLink="/teachers" routerLinkActive="active"
+       [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+      <i class="icon">👨‍🏫</i>
+      <span>Teacher</span>
+    </a>
+
+  </nav>
+
+</div>
+
+
+<button class="mobile-toggle" (click)="toggleMobile()">
+  {{ isMobileOpen ? '✕' : '☰' }}
+</button>

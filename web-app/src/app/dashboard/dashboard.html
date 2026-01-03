@@ -1,0 +1,202 @@
+<div class="app-container">
+  
+  <div class="sidebar-container">
+    <app-sidebar (sidebarStateChange)="onSidebarStateChange($event)"></app-sidebar>
+  </div>
+  
+  <!-- Main content -->
+  <div class="content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280">
+   
+    <app-navbar 
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [pageTitle]="'Dashboard'"
+      [currentUser]="currentUser"
+      (logout)="logout()"
+      (profileUpdate)="onProfileUpdate($event)">
+    </app-navbar>
+    
+    <!--  content area -->
+    <main class="main-content">
+      
+      <div class="stats-cards">
+       
+        <div class="card" style="border-color: #331424;">
+          <div class="card-icon" style="background-color: rgba(51, 20, 36, 0.1);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#331424" viewBox="0 0 16 16">
+              <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+              <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Total Students</h3>
+            <p class="card-value">{{ dashboardData.totalStudents | number }}</p>
+          </div>
+        </div>
+        
+       
+        <div class="card" style="border-color: #F2EED5;">
+          <div class="card-icon" style="background-color: rgba(242, 238, 213, 0.2);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#8B8000" viewBox="0 0 16 16">
+              <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+              <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1z"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Upcoming Tests</h3>
+            <p class="card-value">{{ dashboardData.upcomingTests }}</p>
+            <p class="card-change">Next: {{ dashboardData.nextTestDate | date:'MMM d' }}</p>
+          </div>
+        </div>
+        
+       
+        <div class="card" style="border-color: #FD2A9A;">
+          <div class="card-icon" style="background-color: rgba(253, 42, 154, 0.1);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#FD2A9A" viewBox="0 0 16 16">
+              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
+              <path d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1z"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Average Success Rate</h3>
+            <p class="card-value">{{ dashboardData.averageSuccessRate }}%</p>
+            <div class="success-bar">
+              <div class="success-fill" [style.width]="dashboardData.averageSuccessRate + '%'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <!-- (Bar Chart) -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Success Rate by Course</h3>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-color" style="background-color: #331424;"></span>
+                <span>Success Rate</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas #barChart></canvas>
+          </div>
+        </div>
+        
+        <!--  (Pie Chart) -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Participation Distribution</h3>
+            <div class="chart-legend">
+              <div class="legend-item" *ngFor="let course of participationData; let i = index">
+                <span class="legend-color" [style.background-color]="pinkShades[i]"></span>
+                <span>{{ course.name }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas #pieChart></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Performance Table Section -->
+      <div class="table-section">
+        <div class="table-header">
+          <h2>Performance by Course</h2>
+          <div class="table-filters">
+            <div class="search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+              </svg>
+              <input type="text" placeholder="Search courses..." [(ngModel)]="searchTerm">
+            </div>
+            <select [(ngModel)]="selectedYear" class="year-filter">
+              <option value="">All Years</option>
+              <option *ngFor="let year of allYears" [value]="year">{{ year }}</option>
+            </select>
+            <div class="filter-actions">
+              <button class="reset-btn" (click)="resetFilters()" *ngIf="searchTerm || selectedYear">
+                Reset Filters
+              </button>
+              <button class="export-btn" (click)="exportTable()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                Export Data
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="performance-table">
+            <thead>
+              <tr>
+                <th>Course Name</th>
+                <th>Level</th>
+                <th>Participation Rate</th>
+                <th>Success Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of filteredCourses">
+                <td class="course-name">
+                  <div class="course-info">
+                    <strong>{{ course.courseName }}</strong>
+                    <small>{{ course.courseCode }}</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="years-container">
+                    <span *ngFor="let year of course.years" class="year-badge year-{{ year.split(' ')[1] }}">
+                      {{ year }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="progress-container">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width]="course.participationRate + '%'"></div>
+                    </div>
+                    <span class="progress-value">{{ course.participationRate }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="success-container">
+                    <div class="success-indicator" [style.width]="course.successRate + '%'"></div>
+                    <span class="success-value">{{ course.successRate }}%</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer">
+          <div class="table-info">
+            Showing {{ filteredCourses.length }} of {{ aggregatedCourses.length }} courses
+          </div>
+          <div class="table-pagination">
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+              </svg>
+              Previous
+            </button>
+            <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+              Next
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

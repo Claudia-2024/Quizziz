@@ -1,0 +1,429 @@
+<div class="app-container">
+  
+  <div class="sidebar-container">
+    <app-sidebar 
+      (sidebarStateChange)="onSidebarStateChange($event)">
+    </app-sidebar>
+  </div>
+  
+  <!-- Main content  -->
+  <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280" 
+     [style.width]="'calc(100vw - ' + (isSidebarCollapsed ? 80 : 280) + 'px'">
+   
+    <app-navbar 
+      [isSidebarCollapsed]="isSidebarCollapsed"
+      [pageTitle]="'Courses Management'"
+      [currentUser]="currentUser"
+      (logout)="logout()"
+      (profileUpdate)="onProfileUpdate($event)">
+    </app-navbar>
+    
+    <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
+      <div class="toast-icon">
+        <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
+      </div>
+      <div class="toast-message">{{toastMessage}}</div>
+      <button class="toast-close" (click)="hideToast()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- Add Course Modal -->
+    <div class="modal-overlay" *ngIf="showAddModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Add New Course</h2>
+          <button class="modal-close" (click)="closeAddModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="courseClass">Class *</label>
+            <select id="courseClass" class="form-control" 
+                    [(ngModel)]="newCourse.className" required>
+              <option value="">Select Class</option>
+              <option *ngFor="let cls of classes" [value]="cls.name">
+                {{cls.name}}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+              <label for="courseSemester">Semester *</label>
+              <select id="courseSemester" class="form-control" 
+                      [(ngModel)]="newCourse.semesterNumber" required>
+                <option value="0">Select Semester</option>
+                <option *ngFor="let semesterNumber of getActiveSemesterNumbers()" [value]="semesterNumber">
+                  Semester {{semesterNumber}}
+                </option>
+              </select>
+            </div>
+          <div class="form-group">
+            <label for="courseCode">Course Code *</label>
+            <input type="text" id="courseCode" class="form-control" 
+                   [(ngModel)]="newCourse.code" 
+                   placeholder="e.g., CS101" required>
+          </div>
+          <div class="form-group">
+            <label for="courseName">Course Name *</label>
+            <input type="text" id="courseName" class="form-control" 
+                   [(ngModel)]="newCourse.name" 
+                   placeholder="e.g., Introduction to Computer Science" required>
+          </div>
+          <div class="form-group">
+            <label for="courseCredit">Credit Hours *</label>
+            <input type="number" id="courseCredit" class="form-control" 
+                   [(ngModel)]="newCourse.credit" 
+                   min="1" max="10" placeholder="e.g., 3" required>
+          </div>
+          <div class="form-group">
+            <label for="courseTeacher">Teacher *</label>
+            <select id="courseTeacher" class="form-control" 
+                    [(ngModel)]="newCourse.teacher" required>
+              <option value="">Select Teacher</option>
+              <option *ngFor="let teacher of teachers" [value]="getTeacherFullName(teacher)">
+                {{teacher.firstName}} {{teacher.lastName}}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveCourse()">
+            <i class="fas fa-save"></i> Save Course
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div class="modal-overlay" *ngIf="showEditModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Edit Course</h2>
+          <button class="modal-close" (click)="closeEditModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" *ngIf="editingCourse">
+          <div class="form-group">
+            <label for="editCourseClass">Class *</label>
+            <select id="editCourseClass" class="form-control" 
+                    [(ngModel)]="editingCourse.className" required>
+              <option value="">Select Class</option>
+              <option *ngFor="let cls of classes" [value]="cls.name">
+                {{cls.name}}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+                <label for="editCourseSemester">Semester *</label>
+                <select id="editCourseSemester" class="form-control" 
+                        [(ngModel)]="editingCourse.semesterNumber" required>
+                  <option value="0">Select Semester</option>
+                  <option *ngFor="let semesterNumber of getActiveSemesterNumbers()" [value]="semesterNumber">
+                    Semester {{semesterNumber}}
+                  </option>
+                </select>
+              </div>
+          <div class="form-group">
+            <label for="editCourseCode">Course Code *</label>
+            <input type="text" id="editCourseCode" class="form-control" 
+                   [(ngModel)]="editingCourse.code" 
+                   placeholder="e.g., CS101" required>
+          </div>
+          <div class="form-group">
+            <label for="editCourseName">Course Name *</label>
+            <input type="text" id="editCourseName" class="form-control" 
+                   [(ngModel)]="editingCourse.name" 
+                   placeholder="e.g., Introduction to Computer Science" required>
+          </div>
+          <div class="form-group">
+            <label for="editCourseCredit">Credit Hours *</label>
+            <input type="number" id="editCourseCredit" class="form-control" 
+                   [(ngModel)]="editingCourse.credit" 
+                   min="1" max="10" placeholder="e.g., 3" required>
+          </div>
+          <div class="form-group">
+            <label for="editCourseTeacher">Teacher *</label>
+            <select id="editCourseTeacher" class="form-control" 
+                    [(ngModel)]="editingCourse.teacher" required>
+              <option value="">Select Teacher</option>
+              <option *ngFor="let teacher of teachers" [value]="getTeacherFullName(teacher)">
+                {{teacher.firstName}} {{teacher.lastName}}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="updateCourse()">
+            <i class="fas fa-save"></i> Update Course
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Import Modal -->
+    <div class="modal-overlay" *ngIf="showImportModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h2 class="modal-title">Import Courses</h2>
+          <button class="modal-close" (click)="closeImportModal()" [disabled]="isImporting">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          
+          <div class="form-group">
+            <label for="importFile">Select File *</label>
+            <div class="file-upload-container">
+              <input type="file" id="importFile" 
+                    accept=".csv,.xlsx,.xls"
+                    (change)="onFileSelected($event)" 
+                    [disabled]="isImporting"
+                    class="file-input">
+              <label for="importFile" class="file-upload-label">
+                <i class="fas fa-file-upload"></i>
+                <span>{{importFileName || 'Choose CSV or Excel file'}}</span>
+              </label>
+            </div>
+            <small class="form-text">
+              <a href="javascript:void(0)" (click)="downloadTemplate()" style="color: #331424; text-decoration: underline;">Download Excel template</a>
+            </small>
+          </div>
+
+          <div *ngIf="isImporting" class="progress-section">
+            <div class="progress-label">
+              Importing... {{importProgress}}%
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="importProgress"></div>
+            </div>
+          </div>
+
+          <div *ngIf="importResult" class="results-section">
+            <div [class]="importResult.success ? 'result-success' : 'result-error'">
+              <h4>{{importResult.success ? '✅ Import Successful' : '❌ Import Failed'}}</h4>
+              <p>{{importResult.message}}</p>
+              <p><strong>Imported:</strong> {{importResult.importedCount}} | <strong>Failed:</strong> {{importResult.failedCount}}</p>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="isImporting">
+            Cancel
+          </button>
+          <button class="btn btn-primary" (click)="executeImport()" 
+                  [disabled]="!importFile || isImporting">
+            <i class="fas fa-file-import"></i> {{isImporting ? 'Importing...' : 'Import'}}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showConfirmModal">
+      <div class="modal-container confirm-modal">
+        <div class="modal-header" [class]="'confirm-header-' + confirmModalData.type">
+          <h2 class="modal-title">{{confirmModalData.title}}</h2>
+          <button class="modal-close" (click)="cancelAction()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body confirm-body">
+          <div class="confirm-icon">
+            <i [class]="confirmModalData.type === 'logout' ? 'fas fa-sign-out-alt' : 'fas fa-trash-alt'"></i>
+          </div>
+          <h3 class="confirm-message" [innerHTML]="confirmModalData.message"></h3>
+        </div>
+        <div class="modal-footer confirm-footer">
+          <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
+            {{confirmModalData.cancelText}}
+          </button>
+          <button class="btn confirm-action" 
+                  [class]="'confirm-' + confirmModalData.type" 
+                  (click)="confirmModalData.onConfirm()">
+            {{confirmModalData.confirmText}}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Content section -->
+    <main class="main-content">
+      <div class="content-container">
+        
+        <div class="table-actions-header">
+          <div class="actions-right">
+            <button class="action-btn import-btn" (click)="importTable()">
+              <i class="fas fa-file-import"></i> Import
+            </button>
+            <button class="action-btn add-btn" (click)="openAddModal()">
+              <i class="fas fa-plus"></i> Add Course
+            </button>
+            <button class="action-btn export-btn" (click)="exportTable()">
+              <i class="fas fa-file-export"></i> Export
+            </button>
+          </div>
+        </div>
+
+  
+        <div class="class-filter-header">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" 
+                   placeholder="Search courses..." 
+                   class="search-input"
+                   [(ngModel)]="searchTerm"
+                   (input)="onSearch()">
+          </div>
+          <div class="class-filter">
+            <select class="filter-select" 
+                    [(ngModel)]="selectedClassName" (change)="onClassChange()">
+              <option value="All Classes">All Classes</option>
+              <option *ngFor="let className of classNames.slice(1)" [value]="className">
+                {{className}}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Courses Display -->
+        <div class="courses-container">
+          <div *ngIf="selectedClassName === 'All Classes'" class="grouped-courses-view">
+            <div *ngFor="let group of groupedCourses" class="class-card">
+              <div class="class-card-header">
+                <h3 class="class-card-title">
+                  <i class="fas fa-users"></i> {{group.className}}
+                  <span class="semester-badge">{{group.courses.length}} courses</span>
+                </h3>
+              </div>
+              <div class="courses-grid">
+                <div *ngFor="let course of group.courses" class="course-card-small">
+                  <div class="course-card-header-small">
+                    <div class="course-code-small">{{course.code}}</div>
+                    <div class="course-name-small">{{course.name}}</div>
+                  </div>
+                  <div class="course-card-body-small">
+                    <div class="course-info-small">
+                      <div class="info-item-small">
+                        <div class="info-icon-small">
+                          <i class="fas fa-star"></i>
+                        </div>
+                        <div class="info-content-small">
+                          <div class="info-label-small">Credits</div>
+                          <div class="info-value-small">{{course.credit}}</div>
+                        </div>
+                      </div>
+                      <div class="info-item-small">
+                        <div class="info-icon-small">
+                          <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="info-content-small">
+                          <div class="info-label-small">Teacher</div>
+                          <div class="info-value-small">{{course.teacher}}</div>
+                        </div>
+                      </div>
+                      <div class="info-item-small">
+                        <div class="info-icon-small">
+                          <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="info-content-small">
+                          <div class="info-label-small">Semester</div>
+                          <div class="info-value-small">{{course.semesterNumber}}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="course-card-actions-small">
+                    <button class="action-btn-small edit-btn" 
+                            [title]="'Edit ' + course.name" 
+                            (click)="editCourse(course)">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn-small delete-btn" 
+                            [title]="'Delete ' + course.name" 
+                            (click)="deleteCourse(course)">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="group.courses.length === 0" class="no-courses-in-class">
+                <p>No courses in this class</p>
+              </div>
+            </div>
+          </div>
+
+         
+          <div *ngIf="selectedClassName !== 'All Classes'" class="single-class-view">
+            <div class="single-class-header">
+              <h3 class="single-class-title">
+                <i class="fas fa-users"></i> {{selectedClassName}}
+                <span class="semester-badge">{{filteredCourses.length}} courses</span>
+              </h3>
+            </div>
+            <div class="courses-grid">
+              <div *ngFor="let course of filteredCourses" class="course-card-small">
+                <div class="course-card-header-small">
+                  <div class="course-code-small">{{course.code}}</div>
+                  <div class="course-name-small">{{course.name}}</div>
+                </div>
+                <div class="course-card-body-small">
+                  <div class="course-info-small">
+                    <div class="info-item-small">
+                      <div class="info-icon-small">
+                        <i class="fas fa-star"></i>
+                      </div>
+                      <div class="info-content-small">
+                        <div class="info-label-small">Credits</div>
+                        <div class="info-value-small">{{course.credit}}</div>
+                      </div>
+                    </div>
+                    <div class="info-item-small">
+                      <div class="info-icon-small">
+                        <i class="fas fa-user-tie"></i>
+                      </div>
+                      <div class="info-content-small">
+                        <div class="info-label-small">Teacher</div>
+                        <div class="info-value-small">{{course.teacher}}</div>
+                      </div>
+                    </div>
+                    <div class="info-item-small">
+                      <div class="info-icon-small">
+                        <i class="fas fa-calendar"></i>
+                      </div>
+                      <div class="info-content-small">
+                        <div class="info-label-small">Semester</div>
+                        <div class="info-value-small">{{course.semesterNumber}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="course-card-actions-small">
+                  <button class="action-btn-small edit-btn" 
+                          [title]="'Edit ' + course.name" 
+                          (click)="editCourse(course)">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="action-btn-small delete-btn" 
+                          [title]="'Delete ' + course.name" 
+                          (click)="deleteCourse(course)">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="filteredCourses.length === 0" class="no-results">
+              <i class="fas fa-search no-results-icon"></i>
+              <h3>No courses found</h3>
+              <p>Try adding courses to this class</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

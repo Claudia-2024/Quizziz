@@ -294,6 +294,39 @@ async function getAllEvaluationSessions(req, res) {
     }
 }
 
+async function getEvaluationByCourseCode(req, res) {
+    try {
+        const courseCode = req.params.courseCode;
+        const evaluation = await evaluationService.getEvaluationByCourseCode(courseCode);
+        if (evaluation) {
+            const evaluationDto = new EvaluationDto(evaluation);
+            return res.status(200).json(evaluationDto);
+        } else {
+            return res.status(404).json("Evaluation Not Found for the given Course Code");
+        }
+    } catch (error) {
+        console.error("Error fetching evaluation by course code:", error);
+        res.status(500).json({
+            message: "Failed to fetch evaluation by course code"
+        });
+    }
+}
+
+async function getRevisionQuestions(req, res) {
+    try{
+        const evaluations = await evaluationService.getAllPublishedEvaluations();
+
+        const evaluationDtos = evaluations.map(evaluation => new EvaluationDto(evaluation));
+
+        return res.status(200).json(evaluationDtos);
+    }catch (error) {
+        console.error("Error Fetching Evaluations Questions:", error);
+        res.status(500).json({
+            message: "Failed to Fetch Evaluations Questions"
+        });
+    }
+}
+
 async function getAllPublishedEvaluationSessions(req, res) {
     try {
         const evaluations = await evaluationService.getAllPublishedEvaluations();
@@ -449,5 +482,7 @@ export default {
     startEvaluation,
     saveAnswers,
     submitAnswers,
-    deleteEvaluationSession
+    deleteEvaluationSession,
+    getRevisionQuestions,
+    getEvaluationByCourseCode
 }
