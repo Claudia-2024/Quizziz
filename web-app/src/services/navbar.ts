@@ -39,7 +39,7 @@ export interface AcademicYear {
   providedIn: 'root'
 })
 export class NavbarService {
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = 'http://localhost:3000';
 
   private semestersSubject = new BehaviorSubject<Semester[]>([]);
   private yearsSubject = new BehaviorSubject<AcademicYear[]>([]);
@@ -96,7 +96,7 @@ export class NavbarService {
       );
   }
 
-  
+
   loadYears(): void {
     this.http.get<AcademicYear[]>(`${this.baseUrl}/year`)
       .pipe(
@@ -137,7 +137,7 @@ export class NavbarService {
       );
   }
 
-  
+
   refreshAllData(): void {
     this.loadSemesters();
     this.loadYears();

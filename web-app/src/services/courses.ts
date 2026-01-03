@@ -33,11 +33,11 @@ interface Semester {
   providedIn: 'root'
 })
 export class CoursesService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://localhost:3000';
 
   constructor(private http: HttpClient) {}
 
-  
+
   getCourses(): Observable<Course[]> {
     return this.http.get<Course[]>(`${this.apiUrl}/course`)
       .pipe(
@@ -68,7 +68,7 @@ export class CoursesService {
       );
   }
 
-  
+
   updateCourse(courseCode: string, courseData: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/course/update/${courseCode}`, courseData)
       .pipe(
@@ -76,7 +76,7 @@ export class CoursesService {
       );
   }
 
- 
+
   deleteCourse(courseCode: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/course/delete/${courseCode}`)
       .pipe(
@@ -84,7 +84,7 @@ export class CoursesService {
       );
   }
 
-  
+
   private handleError(error: any): Observable<never> {
     let errorMessage = 'An error occurred';
     if (error.error instanceof ErrorEvent) {

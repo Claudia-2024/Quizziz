@@ -33,6 +33,7 @@ export const isInstitutionalEmail = (email) => {
         'univ-maroua.cm',
         'univ-ndere.cm',
         'univ-bamenda.cm',
+        'saintjeaningenieur.org'
         // Ajoutez d'autres domaines selon vos besoins
         // Exemples supplémentaires :
         // 'ens.cm',
@@ -41,7 +42,7 @@ export const isInstitutionalEmail = (email) => {
 
     const emailLower = email.toLowerCase().trim();
     const emailParts = emailLower.split('@');
-    
+
     if (emailParts.length !== 2) {
         return false;
     }
@@ -53,7 +54,7 @@ export const isInstitutionalEmail = (email) => {
 // Envoyer un email de vérification
 export const sendVerificationEmail = async (email, token, firstName) => {
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
-    
+
     const mailOptions = {
         from: process.env.SMTP_FROM || 'noreply@equizz.cm',
         to: email,
@@ -64,8 +65,8 @@ export const sendVerificationEmail = async (email, token, firstName) => {
                 <p>Merci de vous être inscrit sur la plateforme EQuizz.</p>
                 <p>Pour activer votre compte, veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :</p>
                 <p style="text-align: center; margin: 30px 0;">
-                    <a href="${verificationUrl}" 
-                       style="background-color: #3498db; color: white; padding: 12px 24px; 
+                    <a href="${verificationUrl}"
+                       style="background-color: #3498db; color: white; padding: 12px 24px;
                               text-decoration: none; border-radius: 5px; display: inline-block;">
                         Vérifier mon email
                     </a>

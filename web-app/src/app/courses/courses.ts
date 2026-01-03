@@ -74,19 +74,19 @@ interface ConfirmModalData {
   providers: [CoursesService]
 })
 export class Courses implements OnInit {
-  useMockData = true; 
-  
+  useMockData = false;
+
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'info' = 'info';
   toastTimeout: any;
-  
+
   showAddModal = false;
   showEditModal = false;
   showImportModal = false;
   showConfirmModal = false;
-  
-  confirmModalData: ConfirmModalData = {  
+
+  confirmModalData: ConfirmModalData = {
     title: '',
     message: '',
     confirmText: 'Confirm',
@@ -96,13 +96,13 @@ export class Courses implements OnInit {
   };
 
   isSidebarCollapsed = false;
-  
+
   currentUser: User = {
     id: 1,
     username: 'admin',
     email: 'admin@example.com'
   };
-  
+
   newCourse = {
     code: '',
     name: '',
@@ -111,36 +111,36 @@ export class Courses implements OnInit {
     className: '',
     semesterNumber: 0
   };
-  
+
   editingCourse: Course | null = null;
-  
+
   importFile: File | null = null;
   importProgress = 0;
   isImporting = false;
   importResult: ImportResult | null = null;
   importFileName = '';
-  
+
   searchTerm = '';
   selectedClassName = 'All Classes';
-  
+
   isLoading = false;
   isLoadingTeachers = false;
   isLoadingSemesters = false;
-  
+
   mockClasses: Class[] = [
     { id: 1, name: 'Computer Science 2023', Department: 'Computer Science', students: 45, canDeactivate: false },
     { id: 2, name: 'Mathematics 2023', Department: 'Mathematics', students: 38, canDeactivate: false },
     { id: 3, name: 'Engineering 2024', Department: 'Engineering', students: 52, canDeactivate: false },
     { id: 4, name: 'Business Administration 2024', Department: 'Business', students: 60, canDeactivate: true },
   ];
-  
+
   mockSemesters: Semester[] = [
     { semesterId: 1, number: 1, startDate: '2024-09-01', endDate: '2024-12-20', isActive: true },
     { semesterId: 2, number: 2, startDate: '2025-01-15', endDate: '2025-05-30', isActive: true },
     { semesterId: 3, number: 3, startDate: '2025-06-01', endDate: '2025-08-31', isActive: false },
     { semesterId: 4, number: 4, startDate: '2025-09-01', endDate: '2025-12-20', isActive: false },
   ];
-  
+
   mockTeachers: Teacher[] = [
     { id: 1, firstName: 'John', lastName: 'Smith', email: 'john.smith@university.edu', phoneNumber: '123-456-7890' },
     { id: 2, firstName: 'Emily', lastName: 'Johnson', email: 'emily.johnson@university.edu', phoneNumber: '123-456-7891' },
@@ -149,9 +149,9 @@ export class Courses implements OnInit {
     { id: 5, firstName: 'David', lastName: 'Brown', email: 'david.brown@university.edu', phoneNumber: '123-456-7894' },
     { id: 6, firstName: 'Jennifer', lastName: 'Davis', email: 'jennifer.davis@university.edu', phoneNumber: '123-456-7895' },
   ];
-  
+
   mockCourses: Course[] = [
-    { 
+    {
       id: 1,
       code: 'CS101',
       name: 'Introduction to Computer Science',
@@ -160,7 +160,7 @@ export class Courses implements OnInit {
       className: 'Computer Science 2023',
       semesterNumber: 1
     },
-    { 
+    {
       id: 2,
       code: 'CS201',
       name: 'Data Structures',
@@ -169,7 +169,7 @@ export class Courses implements OnInit {
       className: 'Computer Science 2023',
       semesterNumber: 2
     },
-    { 
+    {
       id: 3,
       code: 'MATH201',
       name: 'Calculus II',
@@ -178,7 +178,7 @@ export class Courses implements OnInit {
       className: 'Mathematics 2023',
       semesterNumber: 1
     },
-    { 
+    {
       id: 4,
       code: 'MATH301',
       name: 'Linear Algebra',
@@ -187,7 +187,7 @@ export class Courses implements OnInit {
       className: 'Mathematics 2023',
       semesterNumber: 2
     },
-    { 
+    {
       id: 5,
       code: 'ENG101',
       name: 'Engineering Fundamentals',
@@ -196,7 +196,7 @@ export class Courses implements OnInit {
       className: 'Engineering 2024',
       semesterNumber: 1
     },
-    { 
+    {
       id: 6,
       code: 'BUS101',
       name: 'Introduction to Business',
@@ -206,16 +206,16 @@ export class Courses implements OnInit {
       semesterNumber: 1
     },
   ];
-  
+
   classes: Class[] = [];
   semesters: Semester[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
   filteredCourses: Course[] = [];
-  
-  groupedCourses: { 
-    className: string; 
-    courses: Course[] 
+
+  groupedCourses: {
+    className: string;
+    courses: Course[]
   }[] = [];
 
   constructor(
@@ -237,7 +237,7 @@ export class Courses implements OnInit {
   }
 
   loadMockData() {
-  
+
     setTimeout(() => {
       this.classes = this.mockClasses;
       setTimeout(() => this.cdr.detectChanges(), 0);
@@ -246,7 +246,7 @@ export class Courses implements OnInit {
 
   loadTeachers() {
     this.isLoadingTeachers = true;
-    
+
     if (this.useMockData) {
       setTimeout(() => {
         this.teachers = this.mockTeachers;
@@ -264,7 +264,7 @@ export class Courses implements OnInit {
         error: (error) => {
           console.error('Error loading teachers:', error);
           this.showToastMessage('Failed to load teachers from server.', 'error');
-          this.teachers = []; 
+          this.teachers = [];
           this.isLoadingTeachers = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
         }
@@ -274,7 +274,7 @@ export class Courses implements OnInit {
 
   loadSemesters() {
     this.isLoadingSemesters = true;
-    
+
     if (this.useMockData) {
       setTimeout(() => {
         this.semesters = this.mockSemesters;
@@ -292,7 +292,7 @@ export class Courses implements OnInit {
         error: (error) => {
           console.error('Error loading semesters:', error);
           this.showToastMessage('Failed to load semesters from server.', 'error');
-          this.semesters = []; 
+          this.semesters = [];
           this.isLoadingSemesters = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
         }
@@ -305,30 +305,30 @@ export class Courses implements OnInit {
   }
 
   getTeacherFullNameFromString(teacherName: string): string {
-    
+
     if (teacherName.includes(' ')) {
       return teacherName;
     }
-    
-   
-    const teacher = this.teachers.find(t => 
+
+
+    const teacher = this.teachers.find(t =>
       `${t.firstName} ${t.lastName}` === teacherName ||
-      t.firstName === teacherName || 
+      t.firstName === teacherName ||
       t.lastName === teacherName
     );
-    
+
     return teacher ? `${teacher.firstName} ${teacher.lastName}` : teacherName;
   }
 
   groupCoursesByClass() {
-    const groups: { [key: string]: { 
-      className: string; 
-      courses: Course[] 
+    const groups: { [key: string]: {
+      className: string;
+      courses: Course[]
     } } = {};
-    
+
     this.filteredCourses.forEach(course => {
       const className = course.className || 'Unassigned';
-      
+
       if (!groups[className]) {
         groups[className] = {
           className,
@@ -337,8 +337,8 @@ export class Courses implements OnInit {
       }
       groups[className].courses.push(course);
     });
-    
-    this.groupedCourses = Object.values(groups).sort((a, b) => 
+
+    this.groupedCourses = Object.values(groups).sort((a, b) =>
       a.className.localeCompare(b.className)
     );
   }
@@ -349,13 +349,13 @@ export class Courses implements OnInit {
   }
 
   getSemesterNumbers(): number[] {
-    
+
     const semesterNumbers = this.semesters.map(s => s.number);
-    
+
     return [...new Set(semesterNumbers)].sort((a, b) => a - b);
   }
 
-  
+
   getActiveSemesterNumbers(): number[] {
     const activeSemesterNumbers = this.semesters
       .filter(semester => semester.isActive)
@@ -366,7 +366,7 @@ export class Courses implements OnInit {
 
   loadCourses() {
     this.isLoading = true;
-    
+
     if (this.useMockData) {
       setTimeout(() => {
         this.courses = [...this.mockCourses];
@@ -387,7 +387,7 @@ export class Courses implements OnInit {
         error: (error) => {
           console.error('Error loading courses:', error);
           this.showToastMessage('Failed to load courses from server. Please check your connection and try again.', 'error');
-          this.courses = []; 
+          this.courses = [];
           this.applyFilters();
           this.isLoading = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
@@ -398,21 +398,21 @@ export class Courses implements OnInit {
 
   applyFilters() {
     let filtered = [...this.courses];
-    
+
     if (this.selectedClassName !== 'All Classes') {
       filtered = filtered.filter(course => course.className === this.selectedClassName);
     }
-    
+
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(course => 
+      filtered = filtered.filter(course =>
         course.code.toLowerCase().includes(term) ||
         course.name.toLowerCase().includes(term) ||
         course.teacher.toLowerCase().includes(term) ||
         course.className.toLowerCase().includes(term)
       );
     }
-    
+
     this.filteredCourses = filtered;
     this.groupCoursesByClass();
   }
@@ -439,14 +439,14 @@ export class Courses implements OnInit {
 
   updateCourse() {
     if (!this.editingCourse) return;
-    
-    if (!this.editingCourse.code || !this.editingCourse.name || 
-        !this.editingCourse.teacher || this.editingCourse.credit <= 0 || 
+
+    if (!this.editingCourse.code || !this.editingCourse.name ||
+        !this.editingCourse.teacher || this.editingCourse.credit <= 0 ||
         !this.editingCourse.className || !this.editingCourse.semesterNumber || this.editingCourse.semesterNumber <= 0) {
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
     }
-    
+
     if (this.useMockData) {
       setTimeout(() => {
         const index = this.courses.findIndex(c => c.id === this.editingCourse!.id);
@@ -568,8 +568,8 @@ export class Courses implements OnInit {
   }
 
   saveCourse() {
-    if (!this.newCourse.code || !this.newCourse.name || 
-        !this.newCourse.teacher || this.newCourse.credit <= 0 || 
+    if (!this.newCourse.code || !this.newCourse.name ||
+        !this.newCourse.teacher || this.newCourse.credit <= 0 ||
         !this.newCourse.className || !this.newCourse.semesterNumber || this.newCourse.semesterNumber <= 0) {
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
@@ -584,7 +584,7 @@ export class Courses implements OnInit {
     if (this.useMockData) {
       setTimeout(() => {
         const newId = Math.max(...this.courses.map(c => c.id), 0) + 1;
-        
+
         const newCourse: Course = {
           id: newId,
           code: this.newCourse.code,
@@ -628,7 +628,7 @@ export class Courses implements OnInit {
             className: this.newCourse.className,
             semesterNumber: this.newCourse.semesterNumber
           };
-          
+
           this.courses.unshift(newCourse);
           this.showToastMessage(`${this.newCourse.code} has been added successfully!`, 'success');
           this.closeAddModal();
@@ -708,11 +708,11 @@ export class Courses implements OnInit {
         ['MATH201', 'Calculus II', 4, 'Emily Johnson', 'Mathematics 2023', '1'],
         ['BUS101', 'Introduction to Business', 3, 'Sarah Taylor', 'Business Administration 2024', '1'],
       ];
-      
+
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses Template');
-      
+
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -721,7 +721,7 @@ export class Courses implements OnInit {
       a.download = 'courses_import_template.xlsx';
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       this.showToastMessage('Template downloaded successfully', 'info');
       setTimeout(() => this.cdr.detectChanges(), 0);
     } catch (error) {
@@ -744,11 +744,11 @@ export class Courses implements OnInit {
           course.semesterNumber || ''
         ])
       ];
-      
+
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses');
-      
+
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -757,7 +757,7 @@ export class Courses implements OnInit {
       a.download = 'courses_export.xlsx';
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       this.showToastMessage('Table exported successfully!', 'success');
       setTimeout(() => this.cdr.detectChanges(), 0);
     } catch (error) {
@@ -802,15 +802,15 @@ export class Courses implements OnInit {
     this.toastMessage = message;
     this.toastType = type;
     this.showToast = true;
-    
+
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
     }
-    
+
     this.toastTimeout = setTimeout(() => {
       this.hideToast();
     }, 3000);
-    
+
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
