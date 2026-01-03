@@ -24,7 +24,7 @@ import { ENDPOINTS } from "@/lib/config";
 const { width, height } = Dimensions.get("window");
 
 export default function Signup() {
-  type ClassItem = { classId: number; level: string };
+  type ClassItem = { classId: number; level: string; department: string };
 
   const router = useRouter();
   const theme = useTheme();
@@ -55,10 +55,10 @@ export default function Signup() {
         const classes: any[] = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
-            ? data.data
-            : Array.isArray(data?.rows)
-              ? data.rows
-              : [];
+          ? data.data
+          : Array.isArray(data?.rows)
+          ? data.rows
+          : [];
 
         setClasses(classes);
       } catch (e) {
@@ -111,7 +111,24 @@ export default function Signup() {
                 placeholder="First Name"
                 value={firstName}
                 onChangeText={setFirstName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
+                placeholderTextColor="#888"
+              />
+            </View>
+            {/* Last Name */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-add-outline" size={24} color={iconColor} />
+              <TextInput
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -123,20 +140,11 @@ export default function Signup() {
                 placeholder="Phone Number"
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 keyboardType="phone-pad"
-                placeholderTextColor="#888"
-              />
-            </View>
-
-            {/* Last Name */}
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-add-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -148,7 +156,10 @@ export default function Signup() {
                 placeholder="Matricule"
                 value={matricule}
                 onChangeText={setMatricule}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -158,14 +169,25 @@ export default function Signup() {
               <Ionicons name="school-outline" size={24} color={iconColor} />
               <TouchableOpacity
                 onPress={() => setClassModalVisible(true)}
-                style={[styles.input, { justifyContent: 'center' }]}
+                style={[styles.input, { justifyContent: "center" }]}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: className ? colors.text : '#888', fontFamily: typography.fontFamily.body }}>
-                  {classesLoading ? 'Loading classes...' : (className || 'Select Class')}
+                <Text
+                  style={{
+                    color: className ? colors.text : "#888",
+                    fontFamily: typography.fontFamily.body,
+                  }}
+                >
+                  {classesLoading
+                    ? "Loading classes..."
+                    : className || "Select Class"}
                 </Text>
               </TouchableOpacity>
-              <Ionicons name="chevron-down-outline" size={20} color={iconColor} />
+              <Ionicons
+                name="chevron-down-outline"
+                size={20}
+                color={iconColor}
+              />
             </View>
 
             <Modal
@@ -175,28 +197,67 @@ export default function Signup() {
               onRequestClose={() => setClassModalVisible(false)}
             >
               <View style={styles.modalBackdrop}>
-                <View style={[styles.modalCard, { backgroundColor: colors.card}]}>
-                  <Text style={{ fontSize: 18, marginBottom: 12, color: colors.text, fontFamily: typography.fontFamily.heading }}>Select Class</Text>
-                  <ScrollView style={{ maxHeight: 300, width: '100%' }}>
+                <View
+                  style={[styles.modalCard, { backgroundColor: colors.card }]}
+                >
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      marginBottom: 12,
+                      color: colors.text,
+                      fontFamily: typography.fontFamily.heading,
+                    }}
+                  >
+                    Select Class
+                  </Text>
+                  <ScrollView style={{ maxHeight: 300, width: "100%" }}>
                     {classes.map((c, idx) => (
                       <TouchableOpacity
-                        key={Number.isFinite(c.classId) ? String(c.classId) : `cls-${idx}`}
+                        key={
+                          Number.isFinite(c.classId)
+                            ? String(c.classId)
+                            : `cls-${idx}`
+                        }
                         onPress={() => {
                           setClassId(c.classId);
-                          setClassName(c.level);
+                          setClassName(`${c.level} ${c.department}`);
                           setClassModalVisible(false);
                         }}
                         style={styles.modalItem}
                       >
-                        <Text style={{ color: colors.text, fontSize: 16, fontFamily: typography.fontFamily.body }}>{c.level}</Text>
+                        <Text
+                          style={{
+                            color: colors.text,
+                            fontSize: 16,
+                            fontFamily: typography.fontFamily.body,
+                          }}
+                        >{`${c.level} ${c.department}`}</Text>
                       </TouchableOpacity>
                     ))}
                     {(!classes || classes.length === 0) && (
-                      <Text style={{ color: '#888', paddingVertical: 8, fontFamily: typography.fontFamily.body }}>No classes available</Text>
+                      <Text
+                        style={{
+                          color: "#888",
+                          paddingVertical: 8,
+                          fontFamily: typography.fontFamily.body,
+                        }}
+                      >
+                        No classes available
+                      </Text>
                     )}
                   </ScrollView>
-                  <TouchableOpacity onPress={() => setClassModalVisible(false)} style={[styles.modalCloseBtn]}>
-                    <Text style={{ color: colors.primary, fontFamily: typography.fontFamily.buttonText }}>Close</Text>
+                  <TouchableOpacity
+                    onPress={() => setClassModalVisible(false)}
+                    style={[styles.modalCloseBtn]}
+                  >
+                    <Text
+                      style={{
+                        color: colors.primary,
+                        fontFamily: typography.fontFamily.buttonText,
+                      }}
+                    >
+                      Close
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -209,7 +270,10 @@ export default function Signup() {
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 keyboardType="email-address"
                 placeholderTextColor="#888"
               />
@@ -217,16 +281,25 @@ export default function Signup() {
 
             {/* Password */}
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
+              <Ionicons
+                name="lock-closed-outline"
+                size={24}
+                color={iconColor}
+              />
               <TextInput
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
-              <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+              <TouchableOpacity
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={24}
@@ -236,9 +309,7 @@ export default function Signup() {
             </View>
 
             {/* Error */}
-            {error ? (
-              <Text style={{ color: 'red' }}>{error}</Text>
-            ) : null}
+            {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
             {/* Signup Button */}
             <Button
               title={loading ? "Creating account..." : "Sign Up"}
@@ -251,7 +322,7 @@ export default function Signup() {
                 try {
                   // Temporary defaults for fields required by backend
                   if (!classId) {
-                    throw new Error('Please select your class');
+                    throw new Error("Please select your class");
                   }
                   const payload = {
                     matricule: matricule,
@@ -261,7 +332,9 @@ export default function Signup() {
                     phoneNumber: phoneNumber?.trim() || 0,
                     password,
                     classId: classId,
-                    studentCardId: matricule || 'CARD-' + Math.random().toString(36).slice(2, 8),
+                    studentCardId:
+                      matricule ||
+                      "CARD-" + Math.random().toString(36).slice(2, 8),
                   };
                   await api.post(ENDPOINTS.auth.register, payload);
                   // Navigate to login after successful registration
@@ -279,7 +352,13 @@ export default function Signup() {
               onPress={() => router.push("/auth/login")}
               style={{ marginTop: 16 }}
             >
-              <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 16,
+                  fontFamily: typography.fontFamily.buttonText,
+                }}
+              >
                 Already have an account? Login.
               </Text>
             </TouchableOpacity>
@@ -333,13 +412,13 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.3)",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
   modalCard: {
-    width: '100%',
+    width: "100%",
     maxWidth: 480,
     borderRadius: 12,
     padding: 16,
@@ -348,11 +427,11 @@ const styles = StyleSheet.create({
   modalItem: {
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: "#e5e5e5",
   },
   modalCloseBtn: {
     marginTop: 12,
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
