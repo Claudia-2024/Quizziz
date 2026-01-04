@@ -28,8 +28,9 @@ const index = () => {
       setLoading(true);
       setError(null);
       try {
+        const coursesEndpoint = student?.classId ? ENDPOINTS.courses.byClass(String(student.classId)) : ENDPOINTS.courses.list;
         const [coursesRes, evalsRes, notifRes] = await Promise.all([
-          api.get<any[]>(ENDPOINTS.courses.list),
+          api.get<any[]>(coursesEndpoint),
           api.get<any[]>(ENDPOINTS.evaluations.list),
           api.get<any[]>(ENDPOINTS.notifications.list),
         ]);
@@ -42,13 +43,12 @@ const index = () => {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [student?.classId]);
     return (
     <View style= {styles.container}>
       <QuizHeader/>
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:5,},styles.title]}>Hello {([student?.firstName, student?.lastName].filter(Boolean).join(' ') || 'there')}</Text>
       <View style={{ alignSelf:"center"}}>
-       <FlowerCard/> 
       </View>
       
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Recent Tests</Text>

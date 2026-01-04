@@ -7,6 +7,9 @@ const courseRoutes = express.Router();
 // Define routes for all services used in the controller
 courseRoutes.get("", courseController.getAllCourses);
 
+// get courses by class id (must come before the generic :courseCode route)
+courseRoutes.get("/class/:classId", courseController.getCoursesByClassId);
+
 //requires courseCode as path parameter
 courseRoutes.get("/:courseCode", courseController.getCourseByCode);
 

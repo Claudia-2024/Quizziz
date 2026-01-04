@@ -20,11 +20,11 @@ import { Sequelize } from "sequelize";
 //     dialect: 'postgres',
 // });
 const sequelize = new Sequelize({
-    database: 'quizziz_db',
+    database: 'quizzis_db',
     username: 'root',
-    password: 'claudia@2603',
+    password: 'mango205',
     host: 'localhost',
-    port: 3308,
+    port: 3306,
     dialect: 'mysql',
 });
 

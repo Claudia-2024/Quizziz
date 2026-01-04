@@ -19,10 +19,11 @@ import {api} from '@/lib/api';
 import {ENDPOINTS} from '@/lib/config';
 import ResultCard from '@/components/cards/resultCard';
 
+type EvalOption = { id: number; text: string };
 type EvalQuestion = {
     id: number;
     text: string;
-    options: string[];
+    options: EvalOption[];
 };
 
 type Evaluation = {
@@ -64,7 +65,7 @@ const TestQuizPage: React.FC = () => {
     const [testStarted, setTestStarted] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [showCompletionModal, setShowCompletionModal] = useState(false);
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [questions, setQuestions] = useState<EvalQuestion[]>([]);
@@ -72,8 +73,15 @@ const TestQuizPage: React.FC = () => {
     const [selectedEvalIndex, setSelectedEvalIndex] = useState<number | null>(null);
     const mountedRef = useRef(true);
 
-    const timePerQuestion = 30;
-    const [timeLeft, setTimeLeft] = useState(timePerQuestion);
+    // Overall exam timer (derived from evaluation start/end time)
+    const [overallTimeLeft, setOverallTimeLeft] = useState<number>(0);
+    const overallTimerRef = useRef<NodeJS.Timer | null>(null);
+
+    // Response sheet and selections
+    const [responseSheetId, setResponseSheetId] = useState<number | null>(null);
+    const [selections, setSelections] = useState<Record<number, number | undefined>>({}); // questionId -> choiceId
+    const [saving, setSaving] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         return () => {
@@ -131,20 +139,25 @@ const TestQuizPage: React.FC = () => {
         fetchAll();
     }, [fetchAll]);
 
+    // Overall timer countdown
     useEffect(() => {
         if (!testStarted) return;
-        setTimeLeft(timePerQuestion);
-    }, [currentQuestion]);
-
-    useEffect(() => {
-        if (!testStarted) return;
-        if (timeLeft === 0) {
-            handleNextQuestion();
-            return;
-        }
-        const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
-        return () => clearInterval(timer);
-    }, [timeLeft, testStarted]);
+        if (overallTimerRef.current) clearInterval(overallTimerRef.current as any);
+        overallTimerRef.current = setInterval(() => {
+            setOverallTimeLeft(t => {
+                if (t <= 1) {
+                    clearInterval(overallTimerRef.current as any);
+                    // Auto-submit when time elapses
+                    void submitEvaluation();
+                    return 0;
+                }
+                return t - 1;
+            });
+        }, 1000);
+        return () => {
+            if (overallTimerRef.current) clearInterval(overallTimerRef.current as any);
+        };
+    }, [testStarted]);
 
     const resetToList = () => {
         // Reset all quiz-related state and show evaluations list again
@@ -157,19 +170,103 @@ const TestQuizPage: React.FC = () => {
         setQuestions([]);
         setTestReady(false);
         setSelectedEvalIndex(null);
+        setResponseSheetId(null);
+        setSelections({});
+        setOverallTimeLeft(0);
+        if (overallTimerRef.current) clearInterval(overallTimerRef.current as any);
     };
 
-    const handleStartTest = () => {
-        setTestStarted(true);
-        setShowReadyModal(false);
+    function nowHMS(): string {
+        const d = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function hmsToSeconds(hms?: string): number {
+        if (!hms || typeof hms !== 'string') return 0;
+        const [hh, mm, ss] = hms.split(':').map((x) => parseInt(x || '0', 10));
+        return (hh || 0) * 3600 + (mm || 0) * 60 + (ss || 0);
+    }
+
+    const handleStartTest = async () => {
+        try {
+            if (selectedEvalIndex === null) return;
+            const evalItem = evaluations[selectedEvalIndex];
+            const evaluationId = Number(evalItem?.id);
+            const clientStartTime = nowHMS();
+            // Call start API → expect { responseSheetId }
+            const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), { clientStartTime });
+            const respId = Number(res?.responseSheetId ?? res?.id ?? res?.responseId);
+            if (!Number.isFinite(respId)) {
+                throw new Error('Failed to start evaluation');
+            }
+            setResponseSheetId(respId);
+
+            // Compute overall duration from evaluation start/end times
+            const dur = Math.max(0, hmsToSeconds(evalItem?.endTime) - hmsToSeconds(evalItem?.startTime));
+            setOverallTimeLeft(dur > 0 ? dur : 0);
+
+            setTestStarted(true);
+            setShowReadyModal(false);
+        } catch (e: any) {
+            setError(e?.message || 'Unable to start test');
+        }
     };
 
-    const handleNextQuestion = () => {
+    const saveCurrentAnswer = async () => {
+        try {
+            if (!responseSheetId) return;
+            const q = questions[currentQuestion];
+            if (!q || selectedOption == null) return;
+            setSaving(true);
+            const payload = { answers: [{ questionId: q.id, choiceId: selectedOption }] };
+            await api.post(ENDPOINTS.evaluations.saveAnswers(String(responseSheetId)), payload);
+            setSelections((prev) => ({ ...prev, [q.id]: selectedOption ?? prev[q.id] }));
+        } catch (e) {
+            // keep quiet; will retry on submit
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleNextQuestion = async () => {
+        // Save current answer before moving on
+        await saveCurrentAnswer();
         setSelectedOption(null);
         if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(q => q + 1);
         } else {
+            // Final question → submit
+            await submitEvaluation();
             setShowCompletionModal(true);
+        }
+    };
+
+    const submitEvaluation = async () => {
+        try {
+            if (!responseSheetId) return;
+            if (submitting) return;
+            setSubmitting(true);
+
+            // Build full answers from selections + current selectedOption
+            const all: Array<{ questionId: number; choiceId: number }> = [];
+            const mapSel: Record<number, number | undefined> = { ...selections };
+            const currQ = questions[currentQuestion];
+            if (currQ && selectedOption != null) {
+                mapSel[currQ.id] = selectedOption;
+            }
+            for (const q of questions) {
+                const cid = mapSel[q.id];
+                if (cid != null) all.push({ questionId: q.id, choiceId: cid });
+            }
+
+            const clientSubmitTime = nowHMS();
+            const payload = { clientSubmitTime, answers: all };
+            await api.post(ENDPOINTS.evaluations.submit(String(responseSheetId)), payload);
+        } catch (e) {
+            setError((e as any)?.message || 'Failed to submit test');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -192,10 +289,10 @@ const TestQuizPage: React.FC = () => {
 
                     <View style={styles.questionCard}>
 
-                        {/* TIMER */}
+                        {/* OVERALL TIMER */}
                         <View style={styles.timerContainer}>
                             <View style={styles.timerCircle}>
-                                <Text style={styles.timerText}>{timeLeft}</Text>
+                                <Text style={styles.timerText}>{overallTimeLeft}</Text>
                             </View>
                         </View>
                         {/* QUESTION NUMBER */}
@@ -212,18 +309,18 @@ const TestQuizPage: React.FC = () => {
                 <View style={styles.answersCard}>
                     <FlatList
                         data={question.options}
-                        keyExtractor={(_, i) => i.toString()}
+                        keyExtractor={(it) => String(it.id)}
                         renderItem={({item, index}) => {
                             const letter = String.fromCharCode(65 + index);
-                            const selected = selectedOption === item;
+                            const selected = selectedOption === item.id;
 
                             return (
                                 <TouchableOpacity
                                     style={[styles.optionCard, selected && styles.optionSelected]}
-                                    onPress={() => setSelectedOption(item)}
+                                    onPress={() => setSelectedOption(item.id)}
                                 >
                                     <Text style={styles.optionLetter}>{letter}.</Text>
-                                    <Text style={styles.optionText}>{item}</Text>
+                                    <Text style={styles.optionText}>{item.text}</Text>
                                 </TouchableOpacity>
                             );
                         }}
@@ -335,7 +432,7 @@ const TestQuizPage: React.FC = () => {
                                                     options: ((q?.choices || []) as any[])
                                                         .slice()
                                                         .sort((a, b) => (Number(a?.order || 0) - Number(b?.order || 0)))
-                                                        .map((c: any) => String(c?.text ?? '')),
+                                                        .map((c: any, i: number) => ({ id: Number(c?.choiceId ?? i), text: String(c?.text ?? '') })),
                                                 }))
                                                 .filter(q => Number.isFinite(q.id));
                                             setQuestions(qs);

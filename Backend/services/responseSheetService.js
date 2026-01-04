@@ -107,5 +107,55 @@ export default{
     getResponseSheetsByEvaluationId,
     createResponseSheet,
     updateResponseSheet,
-    findResponseSheetByMatriculeAndEvaluationId
+    findResponseSheetByMatriculeAndEvaluationId,
+    /**
+     * Express handler: returns all completed evaluations and scores for the connected student by course.
+     * Route params: :courseCode
+     * Auth: requires authenticateToken to populate req.matricule
+     * Response: 200 [{ evaluationId, courseCode, type, publishedDate, score }]
+     */
+    async getStudentScoresByCourse(req, res) {
+        try {
+            const courseCode = req.params.courseCode;
+            const matricule = req.matricule; // set by auth middleware
+
+            if (!courseCode) {
+                return res.status(400).json({ error: 'courseCode is required' });
+            }
+            if (!matricule) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+
+            const rows = await ResponseSheet.findAll({
+                where: { matricule },
+                include: [
+                    {
+                        model: Evaluation,
+                        attributes: ['evaluationId', 'publishedDate', 'type', 'courseCode', 'status'],
+                        where: {
+                            courseCode: courseCode,
+                            status: 'Completed',
+                        },
+                        required: true,
+                    },
+                ],
+            });
+
+            const payload = rows.map((rs) => {
+                const ev = rs.Evaluation || {};
+                return {
+                    evaluationId: rs.evaluationId ?? ev.evaluationId,
+                    courseCode: ev.courseCode,
+                    type: ev.type,
+                    publishedDate: ev.publishedDate,
+                    score: rs.score ?? 0,
+                };
+            });
+
+            return res.status(200).json(payload);
+        } catch (error) {
+            console.error('Error fetching student scores by course:', error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
 };

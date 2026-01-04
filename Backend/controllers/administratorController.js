@@ -1,4 +1,6 @@
 import Administrator from "../models/administrator.js";
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../middleware/auth.js';
 
 async function createAdmin(req, res) {
     try{
@@ -48,3 +50,43 @@ async function updateAdmin(req, res){
 }
 
 export default {createAdmin, updateAdmin};
+ 
+// Add admin login handler
+export async function adminLogin(req, res) {
+    try {
+        const { email, password } = req.body || {};
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
+        }
+
+        const admin = await Administrator.findOne({ where: { email } });
+        if (!admin) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // NOTE: For production, compare hashed password (e.g., bcrypt.compare).
+        if (admin.password !== password) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign(
+            { email: admin.email, role: 'admin' },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return res.status(200).json({
+            message: 'Login successful',
+            token,
+            admin: {
+                adminId: admin.adminId,
+                email: admin.email,
+                role: admin.role,
+            },
+            expiresIn: 7 * 24 * 60 * 60, // seconds
+        });
+    } catch (error) {
+        console.error('Admin login error:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}

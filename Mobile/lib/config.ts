@@ -13,13 +13,19 @@ export const ENDPOINTS = {
   courses: {
     list: '/course',
     byCode: (code: string) => `/course/${code}`,
-    byStudent: (code: string) => `/course/${code}`,
+    byStudent: '/course/student',
+    byClass: (classId: number | string) => `/course/class/${classId}`,
   },
   evaluations: {
     // Returns evaluations for the logged-in student.
     // Each evaluation includes embedded questions and choices (deprecated question/choice endpoints removed from use).
     list: '/evaluation/student',
-    start: (evaluationId:string)=>`/${evaluationId}/start`,
+    // Start an evaluation session → returns { responseSheetId }
+    start: (evaluationId: string) => `/evaluation/${evaluationId}/start`,
+    // Save partial answers for a given response sheet id
+    saveAnswers: (responseSheetId: number | string) => `/evaluation/response/${responseSheetId}/answers`,
+    // Submit final answers for a given response sheet id
+    submit: (responseSheetId: number | string) => `/evaluation/response/${responseSheetId}/submit`,
     revision: '/evaluation/student/revision',
     byCourse: (courseCode: string) => `/evaluation/course/${courseCode}`,
     update: (id: number | string) => `/evaluation/update/${id}`,
@@ -31,6 +37,7 @@ export const ENDPOINTS = {
   responseSheet: {
     list: '/responseSheet',
     byStudentAndEval: (matricule: string, evaluationId: number | string) => `/responseSheet/${matricule}/${evaluationId}`,
+    byCourseForStudent: (courseCode: string) => `/responseSheet/course/${courseCode}`,
   },
   answers: {
     list: '/answer',

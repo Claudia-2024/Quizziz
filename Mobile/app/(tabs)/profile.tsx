@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2e6f7',
-    alignItems: 'center',
     paddingTop: 40,
   },
   scrollContent: {

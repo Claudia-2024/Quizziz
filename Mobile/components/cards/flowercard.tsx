@@ -32,19 +32,7 @@ export default function FlowerCard() {
       <View style={styles.colorTint} />
 
       <View style={styles.container}>
-        <Text style={[styles.title,{fontFamily: typography.fontFamily.heading}]}>Upcoming Test</Text>
         <View style={{flexDirection: 'row'}}>
-        <View >
-        <View style={{flexDirection: 'row', gap: 8, alignItems: "center", marginBottom:10}}>
-            <Image source={require('../../assets/icons/subject.png')}/>
-            <Text style={styles.text}>Web Architecture</Text>
-        </View>
-        <View style={{flexDirection: 'row', gap: 8, alignItems: "center", marginBottom:2}}>
-            <Image source={require('../../assets/icons/upcoming.png')}/>
-            <Text style={styles.text}>45 minutes</Text>
-        </View>
-        <IconButton icon={require("../../assets/icons/nextpng.png")} onPress={() => router.push("/(tabs)/test")} title={"Take Test"}/>
-        </View>
         <Image source={require('../../assets/images/stack-of-books.png')} style={{width:165, height:165 ,position:'absolute', left:190, bottom:-10}} />
         </View>
       </View>

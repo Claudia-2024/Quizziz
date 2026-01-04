@@ -72,28 +72,34 @@ async function getCourseByCode(req, res) {
 
 async function getCoursesForConnectedStudent(req, res) {
     try {
-        const matricule = req.params.matricule;
-        console.log("reached here")
+        // matricule and student are provided by authenticateToken middleware
+        const student = req.student;
+        if (!student) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        if (!student.classId) {
+            // No class assigned -> no courses
+            return res.status(200).json([]);
+        }
 
         const courses = await Course.findAll({
             include: [
                 {
-                    model: Student,
-                    where: { matricule: matricule },
+                    model: Class,
+                    where: { classId: student.classId },
                     attributes: [],
-                    required: true
-                }
-            ]
+                    through: { attributes: ["credit"] },
+                    required: true,
+                },
+            ],
         });
-        if (courses){
-            return res.status(200).json(courses);
-        }else{
-            return res.status(404).json("No Courses Found for the Student");
-        }
 
-    }catch (error) {
+        const courseDtos = courses.map((c) => new CourseDto(c));
+        return res.status(200).json(courseDtos);
+    } catch (error) {
         console.error("Error Fetching Courses for Student: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -186,4 +192,34 @@ async function deleteCourse(req, res) {
 }
 
 
-export default {getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode, getCoursesForConnectedStudent};
+// Get courses by classId (public or can be protected upstream)
+async function getCoursesByClassId(req, res) {
+    try {
+        const classIdParam = req.params.classId;
+        const classId = Number(classIdParam);
+        if (!Number.isFinite(classId)) {
+            return res.status(400).json({ error: 'Invalid classId' });
+        }
+
+        const courses = await Course.findAll({
+            include: [
+                {
+                    model: Class,
+                    where: { classId },
+                    attributes: [],
+                    through: { attributes: ["credit"] },
+                    required: true,
+                },
+            ],
+        });
+
+        const courseDtos = courses.map((c) => new CourseDto(c));
+        return res.status(200).json(courseDtos);
+    } catch (error) {
+        console.error("Error Fetching Courses by Class: ", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+
+export default {getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode, getCoursesForConnectedStudent, getCoursesByClassId};
