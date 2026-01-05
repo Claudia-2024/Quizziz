@@ -2,45 +2,100 @@ import Semester from "../models/semester.js";
 import AcademicYear from "../models/academicYear.js";
 import { Op } from "sequelize";
 
-async function getAllSemesters(req, res){
-    try{
+async function getAllSemesters(req, res) {
+    try {
         const semesters = await Semester.findAll();
         return res.status(200).json(semesters);
-    } catch (error){
+    } catch (error) {
         console.error("Error Fetching Semesters: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-async function getCurrentSemester(req, res){
-    try{
+async function getAllUsableSemesters(req, res) {
+    try {
+        const years = await AcademicYear.findAll({
+            where: {
+                endDate: {
+                    [Op.lte]: new Date(),
+                }
+            }
+        });
+        const semesters = await Semester.findAll();
+        let usableSemesters = [];
+
+        if (years) {
+            for (const year of years) {
+                for (const semester of semesters) {
+                    if (semester.startDate >= year.startDate) {
+                        usableSemesters.push(semester);
+                    }
+                }
+            }
+
+            return res.status(200).json(usableSemesters);
+        }else {
+            return res.status(200).json("No Academic Years Available, Please create an Academic Year first");
+        }
+    }catch (error) {
+        console.error("Error Fetching Usable Semesters: ", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+async function getCurrentYearSemesters(req, res) {
+    try {
+        const currentYear = await AcademicYear.findOne({
+            where: {
+                isPresent: true,
+            },
+        });
+        if (currentYear) {
+            const semesters = await Semester.findAll({
+                where: {
+                    yearId: currentYear.yearId,
+                },
+            });
+            return res.status(200).json(semesters);
+        } else {
+            return res.status(200).json("No Active Academic Year");
+        }
+    }
+    catch (error) {
+        console.error("Error Fetching Current Year Semesters: ", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+async function getCurrentSemester(req, res) {
+    try {
         const semesters = await Semester.findAll();
 
         const currentSemester = semesters.find(semester => semester.isActive == true);
 
-        if(currentSemester){
+        if (currentSemester) {
             return res.status(200).json(currentSemester);
         } else {
             return res.status(200).json("No Active Semester")
         }
-    } catch (error){
+    } catch (error) {
         console.error("Error Fetching Semester: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 
 
 };
 
-async function createSemester(req, res){
-    try{
+async function createSemester(req, res) {
+    try {
         const year = await AcademicYear.findByPk(req.body.yearId);
 
         //Verify that the academic year is either current or future
-        if(year.isPresent == false && new Date(year.startDate) < new Date()){
+        if (year.isPresent == false && new Date(year.startDate) < new Date()) {
             return res.status(400).json("Cannot create semester for a past academic year");
         }
         //Verify that the semester dates are within the academic year dates
-        if(new Date(req.body.startDate) < new Date(year.startDate) || new Date(req.body.endDate) > new Date(year.endDate)){
+        if (new Date(req.body.startDate) < new Date(year.startDate) || new Date(req.body.endDate) > new Date(year.endDate)) {
             return res.status(400).json("Semester dates must be within the academic year dates");
         }
 
@@ -52,7 +107,7 @@ async function createSemester(req, res){
             }
         });
 
-        if(semester){
+        if (semester) {
             return res.status(400).json("Semester with the same number already exists for this academic year");
         }
 
@@ -63,43 +118,43 @@ async function createSemester(req, res){
             }
         });
 
-        if(existingSemester){
+        if (existingSemester) {
             return res.status(400).json("Semester with the same start date already exists");
-        }else{
+        } else {
             const newSemester = Semester.build({
-            number: req.body.number,
-            startDate: req.body.startDate,
-            endDate: req.body.endDate,
-            yearId: req.body.yearId,
-            isActive: false,
-        });
+                number: req.body.number,
+                startDate: req.body.startDate,
+                endDate: req.body.endDate,
+                yearId: req.body.yearId,
+                isActive: false,
+            });
 
-        await newSemester.save();
-        return res.status(201).json(newSemester);
+            await newSemester.save();
+            return res.status(201).json(newSemester);
         }
-    } catch (error){
+    } catch (error) {
         console.error("Error Creating Semester: ", error);
         return res.status(500).json("Internal Server Error");
     }
 }
 
-async function updateSemester(req, res){
-    try{
+async function updateSemester(req, res) {
+    try {
         const semester = await Semester.findByPk(req.params.semesterId);
 
-        if(semester){
+        if (semester) {
 
-        semester.startDate = req.body.startDate || semester.startDate;
-        semester.endDate = req.body.endDate || semester.endDate;
+            semester.startDate = req.body.startDate || semester.startDate;
+            semester.endDate = req.body.endDate || semester.endDate;
 
-        await semester.save();
-        return res.status(200).json(semester);
+            await semester.save();
+            return res.status(200).json(semester);
         } else {
             return res.status(404).json("Semester not found");
         }
-    } catch (error){
+    } catch (error) {
         console.error("Error Updating Semester: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -154,4 +209,4 @@ async function updateCurrentSemester() {
     }
 }
 
-export default {createSemester, updateCurrentSemester, updateSemester, getCurrentSemester, getAllSemesters};
+export default { createSemester, updateCurrentSemester, updateSemester, getCurrentSemester, getAllSemesters, getAllUsableSemesters, getCurrentYearSemesters };

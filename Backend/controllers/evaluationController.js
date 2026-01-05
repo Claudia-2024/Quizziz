@@ -147,7 +147,7 @@ async function createEvaluationSession(req, res) {
         let newEvaluation;
         let count = 0;
 
-        const result = await evaluationController.createEvaluation(
+        const result = await evaluationService.createEvaluation(
             req.body.publishedDate,
             req.body.type,
             req.body.startTime,

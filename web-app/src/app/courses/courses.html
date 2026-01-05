@@ -1,23 +1,23 @@
 <div class="app-container">
-  
+
   <div class="sidebar-container">
-    <app-sidebar 
+    <app-sidebar
       (sidebarStateChange)="onSidebarStateChange($event)">
     </app-sidebar>
   </div>
-  
+
   <!-- Main content  -->
-  <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280" 
+  <div class="main-content-wrapper" [style.margin-left.px]="isSidebarCollapsed ? 80 : 280"
      [style.width]="'calc(100vw - ' + (isSidebarCollapsed ? 80 : 280) + 'px'">
-   
-    <app-navbar 
+
+    <app-navbar
       [isSidebarCollapsed]="isSidebarCollapsed"
       [pageTitle]="'Courses Management'"
       [currentUser]="currentUser"
       (logout)="logout()"
       (profileUpdate)="onProfileUpdate($event)">
     </app-navbar>
-    
+
     <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
       <div class="toast-icon">
         <i [class]="toastType === 'success' ? 'fas fa-check-circle' : toastType === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle'"></i>
@@ -27,7 +27,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <!-- Add Course Modal -->
     <div class="modal-overlay" *ngIf="showAddModal">
       <div class="modal-container">
@@ -40,48 +40,48 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="courseClass">Class *</label>
-            <select id="courseClass" class="form-control" 
+            <select id="courseClass" class="form-control"
                     [(ngModel)]="newCourse.className" required>
               <option value="">Select Class</option>
-              <option *ngFor="let cls of classes" [value]="cls.name">
-                {{cls.name}}
+              <option *ngFor="let cls of classes" [value]="cls.level">
+                {{cls.level}} {{cls.department}}
               </option>
             </select>
           </div>
           <div class="form-group">
               <label for="courseSemester">Semester *</label>
-              <select id="courseSemester" class="form-control" 
+              <select id="courseSemester" class="form-control"
                       [(ngModel)]="newCourse.semesterNumber" required>
                 <option value="0">Select Semester</option>
-                <option *ngFor="let semesterNumber of getActiveSemesterNumbers()" [value]="semesterNumber">
-                  Semester {{semesterNumber}}
+                <option *ngFor="let semesterNumber of semesters" [value]="semesterNumber.semesterId">
+                  Semester {{semesterNumber.number}}
                 </option>
               </select>
             </div>
           <div class="form-group">
             <label for="courseCode">Course Code *</label>
-            <input type="text" id="courseCode" class="form-control" 
-                   [(ngModel)]="newCourse.code" 
+            <input type="text" id="courseCode" class="form-control"
+                   [(ngModel)]="newCourse.courseCode"
                    placeholder="e.g., CS101" required>
           </div>
           <div class="form-group">
             <label for="courseName">Course Name *</label>
-            <input type="text" id="courseName" class="form-control" 
-                   [(ngModel)]="newCourse.name" 
+            <input type="text" id="courseName" class="form-control"
+                   [(ngModel)]="newCourse.courseName"
                    placeholder="e.g., Introduction to Computer Science" required>
           </div>
           <div class="form-group">
             <label for="courseCredit">Credit Hours *</label>
-            <input type="number" id="courseCredit" class="form-control" 
-                   [(ngModel)]="newCourse.credit" 
+            <input type="number" id="courseCredit" class="form-control"
+                   [(ngModel)]="newCourse.credit"
                    min="1" max="10" placeholder="e.g., 3" required>
           </div>
           <div class="form-group">
             <label for="courseTeacher">Teacher *</label>
-            <select id="courseTeacher" class="form-control" 
+            <select id="courseTeacher" class="form-control"
                     [(ngModel)]="newCourse.teacher" required>
               <option value="">Select Teacher</option>
-              <option *ngFor="let teacher of teachers" [value]="getTeacherFullName(teacher)">
+              <option *ngFor="let teacher of teachers" [value]="teacher.firstName">
                 {{teacher.firstName}} {{teacher.lastName}}
               </option>
             </select>
@@ -108,48 +108,48 @@
         <div class="modal-body" *ngIf="editingCourse">
           <div class="form-group">
             <label for="editCourseClass">Class *</label>
-            <select id="editCourseClass" class="form-control" 
+            <select id="editCourseClass" class="form-control"
                     [(ngModel)]="editingCourse.className" required>
               <option value="">Select Class</option>
-              <option *ngFor="let cls of classes" [value]="cls.name">
-                {{cls.name}}
+              <option *ngFor="let cls of classes" [value]="cls.level">
+                {{cls.level}} {{cls.department}}
               </option>
             </select>
           </div>
           <div class="form-group">
                 <label for="editCourseSemester">Semester *</label>
-                <select id="editCourseSemester" class="form-control" 
-                        [(ngModel)]="editingCourse.semesterNumber" required>
+                <select id="editCourseSemester" class="form-control"
+                        [(ngModel)]="editingCourse.semesterId" required>
                   <option value="0">Select Semester</option>
-                  <option *ngFor="let semesterNumber of getActiveSemesterNumbers()" [value]="semesterNumber">
-                    Semester {{semesterNumber}}
+                  <option *ngFor="let semesterNumber of semesters" [value]="semesterNumber.semesterId">
+                    Semester {{semesterNumber.number}}
                   </option>
                 </select>
               </div>
           <div class="form-group">
             <label for="editCourseCode">Course Code *</label>
-            <input type="text" id="editCourseCode" class="form-control" 
-                   [(ngModel)]="editingCourse.code" 
+            <input type="text" id="editCourseCode" class="form-control"
+                   [(ngModel)]="editingCourse.courseCode"
                    placeholder="e.g., CS101" required>
           </div>
           <div class="form-group">
             <label for="editCourseName">Course Name *</label>
-            <input type="text" id="editCourseName" class="form-control" 
-                   [(ngModel)]="editingCourse.name" 
+            <input type="text" id="editCourseName" class="form-control"
+                   [(ngModel)]="editingCourse.courseName"
                    placeholder="e.g., Introduction to Computer Science" required>
           </div>
           <div class="form-group">
             <label for="editCourseCredit">Credit Hours *</label>
-            <input type="number" id="editCourseCredit" class="form-control" 
-                   [(ngModel)]="editingCourse.credit" 
+            <input type="number" id="editCourseCredit" class="form-control"
+                   [(ngModel)]="editingCourse.credit"
                    min="1" max="10" placeholder="e.g., 3" required>
           </div>
           <div class="form-group">
             <label for="editCourseTeacher">Teacher *</label>
-            <select id="editCourseTeacher" class="form-control" 
+            <select id="editCourseTeacher" class="form-control"
                     [(ngModel)]="editingCourse.teacher" required>
               <option value="">Select Teacher</option>
-              <option *ngFor="let teacher of teachers" [value]="getTeacherFullName(teacher)">
+              <option *ngFor="let teacher of teachers" [value]="teacher.teacherId">
                 {{teacher.firstName}} {{teacher.lastName}}
               </option>
             </select>
@@ -163,7 +163,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Import Modal -->
     <div class="modal-overlay" *ngIf="showImportModal">
       <div class="modal-container">
@@ -174,13 +174,13 @@
           </button>
         </div>
         <div class="modal-body">
-          
+
           <div class="form-group">
             <label for="importFile">Select File *</label>
             <div class="file-upload-container">
-              <input type="file" id="importFile" 
+              <input type="file" id="importFile"
                     accept=".csv,.xlsx,.xls"
-                    (change)="onFileSelected($event)" 
+                    (change)="onFileSelected($event)"
                     [disabled]="isImporting"
                     class="file-input">
               <label for="importFile" class="file-upload-label">
@@ -215,14 +215,14 @@
           <button class="btn btn-secondary" (click)="closeImportModal()" [disabled]="isImporting">
             Cancel
           </button>
-          <button class="btn btn-primary" (click)="executeImport()" 
+          <button class="btn btn-primary" (click)="executeImport()"
                   [disabled]="!importFile || isImporting">
             <i class="fas fa-file-import"></i> {{isImporting ? 'Importing...' : 'Import'}}
           </button>
         </div>
       </div>
     </div>
-    
+
     <!-- Confirmation Modal -->
     <div class="modal-overlay" *ngIf="showConfirmModal">
       <div class="modal-container confirm-modal">
@@ -242,19 +242,19 @@
           <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
             {{confirmModalData.cancelText}}
           </button>
-          <button class="btn confirm-action" 
-                  [class]="'confirm-' + confirmModalData.type" 
+          <button class="btn confirm-action"
+                  [class]="'confirm-' + confirmModalData.type"
                   (click)="confirmModalData.onConfirm()">
             {{confirmModalData.confirmText}}
           </button>
         </div>
       </div>
     </div>
-    
+
     <!-- Content section -->
     <main class="main-content">
       <div class="content-container">
-        
+
         <div class="table-actions-header">
           <div class="actions-right">
             <button class="action-btn import-btn" (click)="importTable()">
@@ -269,18 +269,18 @@
           </div>
         </div>
 
-  
+
         <div class="class-filter-header">
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" 
-                   placeholder="Search courses..." 
+            <input type="text"
+                   placeholder="Search courses..."
                    class="search-input"
                    [(ngModel)]="searchTerm"
                    (input)="onSearch()">
           </div>
           <div class="class-filter">
-            <select class="filter-select" 
+            <select class="filter-select"
                     [(ngModel)]="selectedClassName" (change)="onClassChange()">
               <option value="All Classes">All Classes</option>
               <option *ngFor="let className of classNames.slice(1)" [value]="className">
@@ -303,8 +303,8 @@
               <div class="courses-grid">
                 <div *ngFor="let course of group.courses" class="course-card-small">
                   <div class="course-card-header-small">
-                    <div class="course-code-small">{{course.code}}</div>
-                    <div class="course-name-small">{{course.name}}</div>
+                    <div class="course-code-small">{{course.courseCode}}</div>
+                    <div class="course-name-small">{{course.courseName}}</div>
                   </div>
                   <div class="course-card-body-small">
                     <div class="course-info-small">
@@ -332,19 +332,19 @@
                         </div>
                         <div class="info-content-small">
                           <div class="info-label-small">Semester</div>
-                          <div class="info-value-small">{{course.semesterNumber}}</div>
+                          <div class="info-value-small">{{course.number}}</div>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div class="course-card-actions-small">
-                    <button class="action-btn-small edit-btn" 
-                            [title]="'Edit ' + course.name" 
+                    <button class="action-btn-small edit-btn"
+                            [title]="'Edit ' + course.courseName"
                             (click)="editCourse(course)">
                       <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="action-btn-small delete-btn" 
-                            [title]="'Delete ' + course.name" 
+                    <button class="action-btn-small delete-btn"
+                            [title]="'Delete ' + course.courseName"
                             (click)="deleteCourse(course)">
                       <i class="fas fa-trash"></i> Delete
                     </button>
@@ -357,7 +357,7 @@
             </div>
           </div>
 
-         
+
           <div *ngIf="selectedClassName !== 'All Classes'" class="single-class-view">
             <div class="single-class-header">
               <h3 class="single-class-title">
@@ -368,8 +368,8 @@
             <div class="courses-grid">
               <div *ngFor="let course of filteredCourses" class="course-card-small">
                 <div class="course-card-header-small">
-                  <div class="course-code-small">{{course.code}}</div>
-                  <div class="course-name-small">{{course.name}}</div>
+                  <div class="course-code-small">{{course.courseCode}}</div>
+                  <div class="course-name-small">{{course.courseName}}</div>
                 </div>
                 <div class="course-card-body-small">
                   <div class="course-info-small">
@@ -397,19 +397,19 @@
                       </div>
                       <div class="info-content-small">
                         <div class="info-label-small">Semester</div>
-                        <div class="info-value-small">{{course.semesterNumber}}</div>
+                        <div class="info-value-small">{{course.semesterId}}</div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="course-card-actions-small">
-                  <button class="action-btn-small edit-btn" 
-                          [title]="'Edit ' + course.name" 
+                  <button class="action-btn-small edit-btn"
+                          [title]="'Edit ' + course.courseName"
                           (click)="editCourse(course)">
                     <i class="fas fa-edit"></i> Edit
                   </button>
-                  <button class="action-btn-small delete-btn" 
-                          [title]="'Delete ' + course.name" 
+                  <button class="action-btn-small delete-btn"
+                          [title]="'Delete ' + course.className"
                           (click)="deleteCourse(course)">
                     <i class="fas fa-trash"></i> Delete
                   </button>

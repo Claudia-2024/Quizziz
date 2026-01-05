@@ -8,13 +8,14 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { CoursesService } from '../../services/courses';
 import * as XLSX from 'xlsx';
+import { ClassService } from '../../services/classes';
 
 interface Class {
-  id: number;
-  name: string;
-  Department: string;
-  students: number;
-  canDeactivate: boolean;
+  classId: number;
+  level: string;
+  department: string;
+  totalStudents: number;
+  isActive: boolean;
 }
 
 interface Semester {
@@ -26,7 +27,7 @@ interface Semester {
 }
 
 interface Teacher {
-  id: number;
+  teacherId: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -34,13 +35,13 @@ interface Teacher {
 }
 
 interface Course {
-  id: number;
-  code: string;
-  name: string;
+  courseCode: string;
+  courseName: string;
   credit: number;
   teacher: string;
   className: string;
-  semesterNumber?: number;
+  semesterId?: number;
+  number?: number;
 }
 
 interface User {
@@ -71,7 +72,7 @@ interface ConfirmModalData {
   imports: [RouterOutlet, Sidebar, Navbar, FormsModule, CommonModule, HttpClientModule],
   templateUrl: './courses.html',
   styleUrl: './courses.css',
-  providers: [CoursesService]
+  providers: [CoursesService],
 })
 export class Courses implements OnInit {
   useMockData = false;
@@ -92,7 +93,7 @@ export class Courses implements OnInit {
     confirmText: 'Confirm',
     cancelText: 'Cancel',
     type: 'logout',
-    onConfirm: () => {}
+    onConfirm: () => {},
   };
 
   isSidebarCollapsed = false;
@@ -100,16 +101,16 @@ export class Courses implements OnInit {
   currentUser: User = {
     id: 1,
     username: 'admin',
-    email: 'admin@example.com'
+    email: 'admin@example.com',
   };
 
   newCourse = {
-    code: '',
-    name: '',
-    credit: 3,
+    courseCode: '',
+    courseName: '',
+    credit: 0,
     teacher: '',
     className: '',
-    semesterNumber: 0
+    semesterNumber: 0,
   };
 
   editingCourse: Course | null = null;
@@ -128,10 +129,34 @@ export class Courses implements OnInit {
   isLoadingSemesters = false;
 
   mockClasses: Class[] = [
-    { id: 1, name: 'Computer Science 2023', Department: 'Computer Science', students: 45, canDeactivate: false },
-    { id: 2, name: 'Mathematics 2023', Department: 'Mathematics', students: 38, canDeactivate: false },
-    { id: 3, name: 'Engineering 2024', Department: 'Engineering', students: 52, canDeactivate: false },
-    { id: 4, name: 'Business Administration 2024', Department: 'Business', students: 60, canDeactivate: true },
+    {
+      classId: 1,
+      level: 'Computer Science 2023',
+      department: 'Computer Science',
+      totalStudents: 45,
+      isActive: false,
+    },
+    {
+      classId: 2,
+      level: 'Mathematics 2023',
+      department: 'Mathematics',
+      totalStudents: 38,
+      isActive: false,
+    },
+    {
+      classId: 3,
+      level: 'Engineering 2024',
+      department: 'Engineering',
+      totalStudents: 52,
+      isActive: false,
+    },
+    {
+      classId: 4,
+      level: 'Business Administration 2024',
+      department: 'Business',
+      totalStudents: 60,
+      isActive: true,
+    },
   ];
 
   mockSemesters: Semester[] = [
@@ -142,70 +167,51 @@ export class Courses implements OnInit {
   ];
 
   mockTeachers: Teacher[] = [
-    { id: 1, firstName: 'John', lastName: 'Smith', email: 'john.smith@university.edu', phoneNumber: '123-456-7890' },
-    { id: 2, firstName: 'Emily', lastName: 'Johnson', email: 'emily.johnson@university.edu', phoneNumber: '123-456-7891' },
-    { id: 3, firstName: 'Michael', lastName: 'Williams', email: 'michael.williams@university.edu', phoneNumber: '123-456-7892' },
-    { id: 4, firstName: 'Sarah', lastName: 'Taylor', email: 'sarah.taylor@university.edu', phoneNumber: '123-456-7893' },
-    { id: 5, firstName: 'David', lastName: 'Brown', email: 'david.brown@university.edu', phoneNumber: '123-456-7894' },
-    { id: 6, firstName: 'Jennifer', lastName: 'Davis', email: 'jennifer.davis@university.edu', phoneNumber: '123-456-7895' },
+    {
+      teacherId: 1,
+      firstName: 'John',
+      lastName: 'Smith',
+      email: 'john.smith@university.edu',
+      phoneNumber: '123-456-7890',
+    },
+    {
+      teacherId: 2,
+      firstName: 'Emily',
+      lastName: 'Johnson',
+      email: 'emily.johnson@university.edu',
+      phoneNumber: '123-456-7891',
+    },
+    {
+      teacherId: 3,
+      firstName: 'Michael',
+      lastName: 'Williams',
+      email: 'michael.williams@university.edu',
+      phoneNumber: '123-456-7892',
+    },
+    {
+      teacherId: 4,
+      firstName: 'Sarah',
+      lastName: 'Taylor',
+      email: 'sarah.taylor@university.edu',
+      phoneNumber: '123-456-7893',
+    },
+    {
+      teacherId: 5,
+      firstName: 'David',
+      lastName: 'Brown',
+      email: 'david.brown@university.edu',
+      phoneNumber: '123-456-7894',
+    },
+    {
+      teacherId: 6,
+      firstName: 'Jennifer',
+      lastName: 'Davis',
+      email: 'jennifer.davis@university.edu',
+      phoneNumber: '123-456-7895',
+    },
   ];
 
-  mockCourses: Course[] = [
-    {
-      id: 1,
-      code: 'CS101',
-      name: 'Introduction to Computer Science',
-      credit: 3,
-      teacher: 'John Smith',
-      className: 'Computer Science 2023',
-      semesterNumber: 1
-    },
-    {
-      id: 2,
-      code: 'CS201',
-      name: 'Data Structures',
-      credit: 4,
-      teacher: 'John Smith',
-      className: 'Computer Science 2023',
-      semesterNumber: 2
-    },
-    {
-      id: 3,
-      code: 'MATH201',
-      name: 'Calculus II',
-      credit: 4,
-      teacher: 'Emily Johnson',
-      className: 'Mathematics 2023',
-      semesterNumber: 1
-    },
-    {
-      id: 4,
-      code: 'MATH301',
-      name: 'Linear Algebra',
-      credit: 3,
-      teacher: 'Emily Johnson',
-      className: 'Mathematics 2023',
-      semesterNumber: 2
-    },
-    {
-      id: 5,
-      code: 'ENG101',
-      name: 'Engineering Fundamentals',
-      credit: 3,
-      teacher: 'Michael Williams',
-      className: 'Engineering 2024',
-      semesterNumber: 1
-    },
-    {
-      id: 6,
-      code: 'BUS101',
-      name: 'Introduction to Business',
-      credit: 3,
-      teacher: 'Sarah Taylor',
-      className: 'Business Administration 2024',
-      semesterNumber: 1
-    },
-  ];
+  mockCourses: Course[] = [];
 
   classes: Class[] = [];
   semesters: Semester[] = [];
@@ -215,12 +221,13 @@ export class Courses implements OnInit {
 
   groupedCourses: {
     className: string;
-    courses: Course[]
+    courses: Course[];
   }[] = [];
 
   constructor(
     private router: Router,
     private coursesService: CoursesService,
+    private classesService: ClassService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -237,9 +244,29 @@ export class Courses implements OnInit {
   }
 
   loadMockData() {
-
     setTimeout(() => {
-      this.classes = this.mockClasses;
+      // this.classes = this.mockClasses;
+      this.classesService.getAllClasses().subscribe({
+        next: (data) => {
+          this.classes = data;
+          // this.classes = data.map((cls) => ({
+          //   classId: cls.classId, // or cls.classId
+          //   // label: `${cls.level} - ${cls.department}`,
+          //   level: cls.level,
+          //   department: cls.department,
+          //   totalStudents: cls.totalStudents,
+          //   isActive: cls.isActive,
+          // }));
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading classes:', err);
+          this.classes = [];
+          this.cdr.detectChanges();
+        },
+      });
+
       setTimeout(() => this.cdr.detectChanges(), 0);
     }, 100);
   }
@@ -267,7 +294,7 @@ export class Courses implements OnInit {
           this.teachers = [];
           this.isLoadingTeachers = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
-        }
+        },
       });
     }
   }
@@ -284,6 +311,7 @@ export class Courses implements OnInit {
     } else {
       this.coursesService.getSemesters().subscribe({
         next: (data) => {
+          console.log('Loaded semesters:', data);
           this.semesters = data;
           this.isLoadingSemesters = false;
           this.showToastMessage('Semesters loaded successfully', 'success');
@@ -295,7 +323,7 @@ export class Courses implements OnInit {
           this.semesters = [];
           this.isLoadingSemesters = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
-        }
+        },
       });
     }
   }
@@ -305,34 +333,35 @@ export class Courses implements OnInit {
   }
 
   getTeacherFullNameFromString(teacherName: string): string {
-
     if (teacherName.includes(' ')) {
       return teacherName;
     }
 
-
-    const teacher = this.teachers.find(t =>
-      `${t.firstName} ${t.lastName}` === teacherName ||
-      t.firstName === teacherName ||
-      t.lastName === teacherName
+    const teacher = this.teachers.find(
+      (t) =>
+        `${t.firstName} ${t.lastName}` === teacherName ||
+        t.firstName === teacherName ||
+        t.lastName === teacherName
     );
 
     return teacher ? `${teacher.firstName} ${teacher.lastName}` : teacherName;
   }
 
   groupCoursesByClass() {
-    const groups: { [key: string]: {
-      className: string;
-      courses: Course[]
-    } } = {};
+    const groups: {
+      [key: string]: {
+        className: string;
+        courses: Course[];
+      };
+    } = {};
 
-    this.filteredCourses.forEach(course => {
+    this.filteredCourses.forEach((course) => {
       const className = course.className || 'Unassigned';
 
       if (!groups[className]) {
         groups[className] = {
           className,
-          courses: []
+          courses: [],
         };
       }
       groups[className].courses.push(course);
@@ -344,22 +373,20 @@ export class Courses implements OnInit {
   }
 
   get classNames(): string[] {
-    const nameList = this.classes.map(c => c.name);
+    const nameList = this.classes.map((c) => c.level);
     return ['All Classes', ...Array.from(new Set(nameList)).sort()];
   }
 
   getSemesterNumbers(): number[] {
-
-    const semesterNumbers = this.semesters.map(s => s.number);
+    const semesterNumbers = this.semesters.map((s) => s.number);
 
     return [...new Set(semesterNumbers)].sort((a, b) => a - b);
   }
 
-
   getActiveSemesterNumbers(): number[] {
     const activeSemesterNumbers = this.semesters
-      .filter(semester => semester.isActive)
-      .map(s => s.number);
+      .filter((semester) => semester.isActive)
+      .map((s) => s.number);
 
     return [...new Set(activeSemesterNumbers)].sort((a, b) => a - b);
   }
@@ -386,12 +413,15 @@ export class Courses implements OnInit {
         },
         error: (error) => {
           console.error('Error loading courses:', error);
-          this.showToastMessage('Failed to load courses from server. Please check your connection and try again.', 'error');
+          this.showToastMessage(
+            'Failed to load courses from server. Please check your connection and try again.',
+            'error'
+          );
           this.courses = [];
           this.applyFilters();
           this.isLoading = false;
           setTimeout(() => this.cdr.detectChanges(), 0);
-        }
+        },
       });
     }
   }
@@ -400,16 +430,17 @@ export class Courses implements OnInit {
     let filtered = [...this.courses];
 
     if (this.selectedClassName !== 'All Classes') {
-      filtered = filtered.filter(course => course.className === this.selectedClassName);
+      filtered = filtered.filter((course) => course.className === this.selectedClassName);
     }
 
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(course =>
-        course.code.toLowerCase().includes(term) ||
-        course.name.toLowerCase().includes(term) ||
-        course.teacher.toLowerCase().includes(term) ||
-        course.className.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (course) =>
+          course.courseCode.toLowerCase().includes(term) ||
+          course.className.toLowerCase().includes(term) ||
+          course.teacher.toLowerCase().includes(term) ||
+          course.className.toLowerCase().includes(term)
       );
     }
 
@@ -440,64 +471,81 @@ export class Courses implements OnInit {
   updateCourse() {
     if (!this.editingCourse) return;
 
-    if (!this.editingCourse.code || !this.editingCourse.name ||
-        !this.editingCourse.teacher || this.editingCourse.credit <= 0 ||
-        !this.editingCourse.className || !this.editingCourse.semesterNumber || this.editingCourse.semesterNumber <= 0) {
+    if (
+      !this.editingCourse.courseCode ||
+      !this.editingCourse.className ||
+      !this.editingCourse.teacher ||
+      this.editingCourse.credit <= 0 ||
+      !this.editingCourse.className ||
+      !this.editingCourse.semesterId ||
+      this.editingCourse.semesterId <= 0
+    ) {
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
     }
 
     if (this.useMockData) {
       setTimeout(() => {
-        const index = this.courses.findIndex(c => c.id === this.editingCourse!.id);
+        const index = this.courses.findIndex(
+          (c) => c.courseCode === this.editingCourse!.courseCode
+        );
         if (index !== -1) {
           const updatedCourse: Course = {
-            id: this.editingCourse!.id,
-            code: this.editingCourse!.code,
-            name: this.editingCourse!.name,
+            courseCode: this.editingCourse!.courseCode,
+            courseName: this.editingCourse!.className,
             credit: this.editingCourse!.credit,
             teacher: this.editingCourse!.teacher,
             className: this.editingCourse!.className,
-            semesterNumber: this.editingCourse!.semesterNumber || 1
+            semesterId: this.editingCourse!.semesterId || 1,
           };
           this.courses[index] = updatedCourse;
-          this.showToastMessage(`${this.editingCourse!.code} updated successfully!`, 'success');
+          this.showToastMessage(
+            `${this.editingCourse!.courseCode} updated successfully!`,
+            'success'
+          );
           this.closeEditModal();
           this.applyFilters();
           setTimeout(() => this.cdr.detectChanges(), 0);
         }
       }, 200);
     } else {
-      const selectedClass = this.classes.find(c => c.name === this.editingCourse!.className);
+      const selectedClass = this.classes.find((c) => c.level === this.editingCourse!.className);
       if (!selectedClass) {
         this.showToastMessage('Selected class not found!', 'error');
         return;
       }
 
       const courseData = {
-        name: this.editingCourse!.name,
+        courseName: this.editingCourse!.courseName,
         credit: this.editingCourse!.credit,
-        teacher: this.editingCourse!.teacher,
+        teacherId: this.editingCourse!.teacher,
         className: this.editingCourse!.className,
-        semesterNumber: this.editingCourse!.semesterNumber
+        semesterId: this.editingCourse!.semesterId,
       };
 
-      this.coursesService.updateCourse(this.editingCourse!.code, courseData).subscribe({
+      console.log('Updating course with data:', courseData);
+      console.log('Editing course code:', this.editingCourse!.courseCode);
+
+      this.coursesService.updateCourse(this.editingCourse!.courseCode, selectedClass.classId, courseData).subscribe({
         next: (response) => {
-          const index = this.courses.findIndex(c => c.code === this.editingCourse!.code);
+          const index = this.courses.findIndex(
+            (c) => c.courseCode === this.editingCourse!.courseCode
+          );
           if (index !== -1) {
             const updatedCourse: Course = {
-              id: this.editingCourse!.id,
-              code: this.editingCourse!.code,
-              name: response.name || this.editingCourse!.name,
+              courseCode: this.editingCourse!.courseCode,
+              courseName: response.name || this.editingCourse!.className,
               credit: response.credit || this.editingCourse!.credit,
               teacher: response.teacher || this.editingCourse!.teacher,
               className: response.className || this.editingCourse!.className,
-              semesterNumber: response.semesterNumber || this.editingCourse!.semesterNumber || 1
+              semesterId: response.semesterNumber || this.editingCourse!.semesterId || 1,
             };
             this.courses[index] = updatedCourse;
           }
-          this.showToastMessage(`${this.editingCourse!.code} updated successfully!`, 'success');
+          this.showToastMessage(
+            `${this.editingCourse!.courseCode} updated successfully!`,
+            'success'
+          );
           this.closeEditModal();
           this.applyFilters();
           setTimeout(() => this.cdr.detectChanges(), 0);
@@ -506,7 +554,7 @@ export class Courses implements OnInit {
           console.error('Error updating course:', error);
           this.showToastMessage('Failed to update course', 'error');
           setTimeout(() => this.cdr.detectChanges(), 0);
-        }
+        },
       });
     }
   }
@@ -515,30 +563,30 @@ export class Courses implements OnInit {
     this.showConfirmModal = true;
     this.confirmModalData = {
       title: 'Delete Course',
-      message: `Are you sure you want to delete <strong>${course.code} - ${course.name}</strong>?`,
+      message: `Are you sure you want to delete <strong>${course.courseCode} - ${course.className}</strong>?`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       type: 'delete',
       onConfirm: () => {
         if (this.useMockData) {
           setTimeout(() => {
-            const index = this.courses.findIndex(c => c.id === course.id);
+            const index = this.courses.findIndex((c) => c.courseCode === course.courseCode);
             if (index !== -1) {
               this.courses.splice(index, 1);
-              this.showToastMessage(`${course.code} deleted successfully!`, 'success');
+              this.showToastMessage(`${course.courseCode} deleted successfully!`, 'success');
               this.applyFilters();
               this.showConfirmModal = false;
               setTimeout(() => this.cdr.detectChanges(), 0);
             }
           }, 200);
         } else {
-          this.coursesService.deleteCourse(course.code).subscribe({
+          this.coursesService.deleteCourse(course.courseCode).subscribe({
             next: () => {
-              const index = this.courses.findIndex(c => c.code === course.code);
+              const index = this.courses.findIndex((c) => c.courseCode === course.courseCode);
               if (index !== -1) {
                 this.courses.splice(index, 1);
               }
-              this.showToastMessage(`${course.code} deleted successfully!`, 'success');
+              this.showToastMessage(`${course.courseCode} deleted successfully!`, 'success');
               this.applyFilters();
               this.showConfirmModal = false;
               setTimeout(() => this.cdr.detectChanges(), 0);
@@ -548,16 +596,23 @@ export class Courses implements OnInit {
               this.showToastMessage('Failed to delete course', 'error');
               this.showConfirmModal = false;
               setTimeout(() => this.cdr.detectChanges(), 0);
-            }
+            },
           });
         }
-      }
+      },
     };
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   openAddModal() {
-    this.newCourse = { code: '', name: '', credit: 3, teacher: '', className: '', semesterNumber: 0 };
+    this.newCourse = {
+      courseCode: '',
+      courseName: '',
+      credit: 3,
+      teacher: '',
+      className: '',
+      semesterNumber: 0,
+    };
     this.showAddModal = true;
     setTimeout(() => this.cdr.detectChanges(), 0);
   }
@@ -568,69 +623,86 @@ export class Courses implements OnInit {
   }
 
   saveCourse() {
-    if (!this.newCourse.code || !this.newCourse.name ||
-        !this.newCourse.teacher || this.newCourse.credit <= 0 ||
-        !this.newCourse.className || !this.newCourse.semesterNumber || this.newCourse.semesterNumber <= 0) {
+    if (
+      !this.newCourse.courseCode ||
+      !this.newCourse.courseName ||
+      !this.newCourse.teacher ||
+      this.newCourse.credit <= 0 ||
+      !this.newCourse.className ||
+      !this.newCourse.semesterNumber ||
+      this.newCourse.semesterNumber <= 0
+    ) {
+
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
     }
 
-    if (this.courses.some(c => c.code === this.newCourse.code && c.className === this.newCourse.className)) {
+    if (
+      this.courses.some(
+        (c) =>
+          c.courseCode === this.newCourse.courseCode && c.className === this.newCourse.className
+      )
+    ) {
       const className = this.newCourse.className;
-      this.showToastMessage(`Course code ${this.newCourse.code} already exists in ${className}!`, 'error');
+      this.showToastMessage(
+        `Course code ${this.newCourse.courseCode} already exists in ${className}!`,
+        'error'
+      );
       return;
     }
 
     if (this.useMockData) {
       setTimeout(() => {
-        const newId = Math.max(...this.courses.map(c => c.id), 0) + 1;
-
         const newCourse: Course = {
-          id: newId,
-          code: this.newCourse.code,
-          name: this.newCourse.name,
+          courseCode: this.newCourse.courseCode,
+          courseName: this.newCourse.courseName,
           credit: this.newCourse.credit,
           teacher: this.newCourse.teacher,
           className: this.newCourse.className,
-          semesterNumber: this.newCourse.semesterNumber
+          semesterId: this.newCourse.semesterNumber,
         };
 
         this.courses.unshift(newCourse);
-        this.showToastMessage(`${this.newCourse.code} has been added successfully!`, 'success');
+        this.showToastMessage(
+          `${this.newCourse.courseCode} has been added successfully!`,
+          'success'
+        );
         this.closeAddModal();
         this.applyFilters();
         setTimeout(() => this.cdr.detectChanges(), 0);
       }, 200);
     } else {
-      const selectedClass = this.classes.find(c => c.name === this.newCourse.className);
+      const selectedClass = this.classes.find((c) => c.level === this.newCourse.className);
       if (!selectedClass) {
         this.showToastMessage('Selected class not found!', 'error');
         return;
       }
 
       const courseData = {
-        code: this.newCourse.code,
-        name: this.newCourse.name,
+        courseCode: this.newCourse.courseCode,
+        courseName: this.newCourse.courseName,
         credit: this.newCourse.credit,
-        teacher: this.newCourse.teacher,
+        teacherId: this.newCourse.teacher,
         className: this.newCourse.className,
-        semesterNumber: this.newCourse.semesterNumber
+        semesterId: this.newCourse.semesterNumber,
       };
 
-      this.coursesService.createCourse(selectedClass.id, courseData).subscribe({
+      this.coursesService.createCourse(selectedClass.classId, courseData).subscribe({
         next: (response) => {
-          const newCourse: Course = {
-            id: response.id || Math.max(...this.courses.map(c => c.id), 0) + 1,
-            code: this.newCourse.code,
-            name: this.newCourse.name,
-            credit: this.newCourse.credit,
-            teacher: this.newCourse.teacher,
-            className: this.newCourse.className,
-            semesterNumber: this.newCourse.semesterNumber
-          };
+          // const newCourse: Course = {
+          //   courseCode: this.newCourse.courseCode,
+          //   courseName: this.newCourse.courseName,
+          //   credit: this.newCourse.credit,
+          //   teacher: this.newCourse.teacher,
+          //   className: this.newCourse.className,
+          //   semesterId: this.newCourse.semesterNumber,
+          // };
 
-          this.courses.unshift(newCourse);
-          this.showToastMessage(`${this.newCourse.code} has been added successfully!`, 'success');
+          // this.courses.unshift(newCourse);
+          this.showToastMessage(
+            `${this.newCourse.courseCode} has been added successfully!`,
+            'success'
+          );
           this.closeAddModal();
           this.applyFilters();
           setTimeout(() => this.cdr.detectChanges(), 0);
@@ -639,7 +711,7 @@ export class Courses implements OnInit {
           console.error('Error adding course:', error);
           this.showToastMessage('Failed to add course', 'error');
           setTimeout(() => this.cdr.detectChanges(), 0);
-        }
+        },
       });
     }
   }
@@ -687,7 +759,7 @@ export class Courses implements OnInit {
           success: true,
           message: 'Successfully imported courses',
           importedCount: 3,
-          failedCount: 0
+          failedCount: 0,
         };
         this.showToastMessage('Courses imported successfully!', 'success');
         this.loadCourses();
@@ -704,9 +776,23 @@ export class Courses implements OnInit {
     try {
       const worksheetData = [
         ['CourseCode', 'CourseName', 'CreditHours', 'Teacher', 'ClassName', 'SemesterNumber'],
-        ['CS101', 'Introduction to Computer Science', 3, 'John Smith', 'Computer Science 2023', '1'],
+        [
+          'CS101',
+          'Introduction to Computer Science',
+          3,
+          'John Smith',
+          'Computer Science 2023',
+          '1',
+        ],
         ['MATH201', 'Calculus II', 4, 'Emily Johnson', 'Mathematics 2023', '1'],
-        ['BUS101', 'Introduction to Business', 3, 'Sarah Taylor', 'Business Administration 2024', '1'],
+        [
+          'BUS101',
+          'Introduction to Business',
+          3,
+          'Sarah Taylor',
+          'Business Administration 2024',
+          '1',
+        ],
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -714,7 +800,9 @@ export class Courses implements OnInit {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses Template');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -735,14 +823,14 @@ export class Courses implements OnInit {
     try {
       const worksheetData = [
         ['Class', 'Course Code', 'Course Name', 'Credit', 'Teacher', 'Semester'],
-        ...this.filteredCourses.map(course => [
+        ...this.filteredCourses.map((course) => [
           course.className,
-          course.code,
-          course.name,
+          course.courseCode,
+          course.courseName,
           course.credit,
           course.teacher,
-          course.semesterNumber || ''
-        ])
+          course.semesterId || '',
+        ]),
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -750,7 +838,9 @@ export class Courses implements OnInit {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Courses');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -788,7 +878,7 @@ export class Courses implements OnInit {
         }, 1000);
         this.showConfirmModal = false;
         setTimeout(() => this.cdr.detectChanges(), 0);
-      }
+      },
     };
     setTimeout(() => this.cdr.detectChanges(), 0);
   }

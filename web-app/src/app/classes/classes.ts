@@ -45,7 +45,7 @@ interface User {
   imports: [RouterOutlet, Sidebar, Navbar, FormsModule, CommonModule, HttpClientModule],
   templateUrl: './classes.html',
   styleUrl: './classes.css',
-  providers: [ClassService]
+  providers: [ClassService],
 })
 export class Classes implements OnInit {
   useMockData = false;
@@ -67,13 +67,13 @@ export class Classes implements OnInit {
     cancelText: 'Cancel',
     type: 'info',
     onConfirm: () => {},
-    onCancel: () => {}
+    onCancel: () => {},
   };
 
   newClass = {
     name: '',
     Department: '',
-    students: 0
+    students: 0,
   };
 
   editingClass: Class = {
@@ -81,7 +81,7 @@ export class Classes implements OnInit {
     level: '',
     department: '',
     totalStudents: 0,
-    canDeactivate: true
+    isActive: true,
   };
 
   isSidebarCollapsed = false;
@@ -114,7 +114,7 @@ export class Classes implements OnInit {
     'Computer Science',
     'Humanities',
     'Arts',
-    'Sports'
+    'Sports',
   ];
 
   mockClasses: Class[] = [
@@ -123,71 +123,71 @@ export class Classes implements OnInit {
       level: 'Mathematics 101',
       department: 'Science & Technology',
       totalStudents: 45,
-      canDeactivate: true
+      isActive: true,
     },
     {
       classId: 2,
       level: 'Physics 201',
       department: 'Science & Technology',
       totalStudents: 32,
-      canDeactivate: true
+      isActive: true,
     },
     {
       classId: 3,
       level: 'Chemistry 301',
       department: 'Science & Technology',
       totalStudents: 28,
-      canDeactivate: false
+      isActive: false,
     },
     {
       classId: 4,
       level: 'Biology 401',
       department: 'Life Sciences',
       totalStudents: 40,
-      canDeactivate: true
+      isActive: true,
     },
     {
       classId: 5,
       level: 'Computer Science 101',
       department: 'Computer Science',
       totalStudents: 50,
-      canDeactivate: false
+      isActive: false,
     },
     {
       classId: 6,
       level: 'English Literature',
       department: 'Humanities',
       totalStudents: 35,
-      canDeactivate: false
+      isActive: false,
     },
     {
       classId: 7,
       level: 'History 201',
       department: 'Humanities',
       totalStudents: 30,
-      canDeactivate: true
+      isActive: true,
     },
     {
       classId: 8,
       level: 'Art 101',
       department: 'Arts',
       totalStudents: 25,
-      canDeactivate: true
+      isActive: true,
     },
     {
       classId: 9,
       level: 'Music Theory',
       department: 'Arts',
       totalStudents: 20,
-      canDeactivate: false
+      isActive: false,
     },
     {
       classId: 10,
       level: 'Physical Education',
       department: 'Sports',
       totalStudents: 60,
-      canDeactivate: true
-    }
+      isActive: true,
+    },
   ];
 
   classes: Class[] = [];
@@ -203,7 +203,7 @@ export class Classes implements OnInit {
     totalPages: 0,
     startIndex: 0,
     endIndex: 0,
-    pages: [] as number[]
+    pages: [] as number[],
   };
 
   isLoading = true;
@@ -218,7 +218,6 @@ export class Classes implements OnInit {
   }
 
   ngOnInit() {
-
     this.loadAllData();
   }
 
@@ -234,12 +233,10 @@ export class Classes implements OnInit {
     this.isLoading = true;
     this.hasApiError = false;
 
-
     setTimeout(() => {
-
       this.departments = ['All', ...this.mockDepartments];
 
-      const uniqueClassNames = [...new Set(this.mockClasses.map(cls => cls.level))].sort();
+      const uniqueClassNames = [...new Set(this.mockClasses.map((cls) => cls.level))].sort();
       this.classNames = ['All', ...uniqueClassNames];
 
       this.classes = [...this.mockClasses];
@@ -260,10 +257,10 @@ export class Classes implements OnInit {
         this.classes = data;
         this.applyFilters();
 
-        const uniqueDepartments = [...new Set(data.map(cls => cls.department))].sort();
+        const uniqueDepartments = [...new Set(data.map((cls) => cls.department))].sort();
         this.departments = ['All', ...uniqueDepartments];
 
-        const uniqueClassNames = [...new Set(data.map(cls => cls.level))].sort();
+        const uniqueClassNames = [...new Set(data.map((cls) => cls.level))].sort();
         this.classNames = ['All', ...uniqueClassNames];
 
         this.isLoading = false;
@@ -281,10 +278,13 @@ export class Classes implements OnInit {
         this.classNames = ['All'];
         this.updatePagination();
 
-        this.showToastMessage('Failed to connect to the server. Please check your connection and try again.', 'error');
+        this.showToastMessage(
+          'Failed to connect to the server. Please check your connection and try again.',
+          'error'
+        );
 
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -301,22 +301,18 @@ export class Classes implements OnInit {
     let filtered = [...this.classes];
 
     if (this.selectedDepartment !== 'All') {
-      filtered = filtered.filter(cls =>
-        cls.department === this.selectedDepartment
-      );
+      filtered = filtered.filter((cls) => cls.department === this.selectedDepartment);
     }
 
     if (this.selectedClass !== 'All') {
-      filtered = filtered.filter(cls =>
-        cls.level === this.selectedClass
-      );
+      filtered = filtered.filter((cls) => cls.level === this.selectedClass);
     }
 
     if (this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(cls =>
-        cls.level.toLowerCase().includes(term) ||
-        cls.department.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (cls) =>
+          cls.level.toLowerCase().includes(term) || cls.department.toLowerCase().includes(term)
       );
     }
 
@@ -338,9 +334,17 @@ export class Classes implements OnInit {
 
   updatePagination() {
     this.pagination.totalItems = this.filteredClasses.length;
-    this.pagination.totalPages = Math.ceil(this.pagination.totalItems / this.pagination.itemsPerPage);
-    this.pagination.startIndex = Math.min((this.pagination.currentPage - 1) * this.pagination.itemsPerPage + 1, this.pagination.totalItems);
-    this.pagination.endIndex = Math.min(this.pagination.currentPage * this.pagination.itemsPerPage, this.pagination.totalItems);
+    this.pagination.totalPages = Math.ceil(
+      this.pagination.totalItems / this.pagination.itemsPerPage
+    );
+    this.pagination.startIndex = Math.min(
+      (this.pagination.currentPage - 1) * this.pagination.itemsPerPage + 1,
+      this.pagination.totalItems
+    );
+    this.pagination.endIndex = Math.min(
+      this.pagination.currentPage * this.pagination.itemsPerPage,
+      this.pagination.totalItems
+    );
 
     this.pagination.pages = [];
     const maxPagesToShow = 5;
@@ -392,7 +396,7 @@ export class Classes implements OnInit {
       cancelText: config.cancelText || 'Cancel',
       type: config.type || 'info',
       onConfirm: config.onConfirm,
-      onCancel: config.onCancel || (() => {})
+      onCancel: config.onCancel || (() => {}),
     };
     this.showConfirmModal = true;
     this.cdr.detectChanges();
@@ -428,24 +432,28 @@ export class Classes implements OnInit {
       level: '',
       department: '',
       totalStudents: 0,
-      canDeactivate: true
+      isActive: true,
     };
     this.cdr.detectChanges();
   }
 
   updateClass() {
-    if (!this.editingClass.level || !this.editingClass.department || this.editingClass.totalStudents <= 0) {
+    if (
+      !this.editingClass.level ||
+      !this.editingClass.department ||
+      this.editingClass.totalStudents <= 0
+    ) {
       this.showToastMessage('Please fill all fields correctly!', 'error');
       return;
     }
 
     if (this.useMockData) {
-      const index = this.classes.findIndex(c => c.classId === this.editingClass.classId);
+      const index = this.classes.findIndex((c) => c.classId === this.editingClass.classId);
       if (index !== -1) {
         this.classes[index] = { ...this.editingClass };
 
         if (!this.classNames.includes(this.editingClass.level)) {
-          const oldName = this.classes.find(c => c.classId === this.editingClass.classId)?.level;
+          const oldName = this.classes.find((c) => c.classId === this.editingClass.classId)?.level;
           const nameIndex = this.classNames.indexOf(oldName || '');
           if (nameIndex !== -1) {
             this.classNames[nameIndex] = this.editingClass.level;
@@ -453,45 +461,51 @@ export class Classes implements OnInit {
           }
         }
 
-        this.showToastMessage(`${this.editingClass.level} has been updated successfully!`, 'success');
+        this.showToastMessage(
+          `${this.editingClass.level} has been updated successfully!`,
+          'success'
+        );
         this.closeEditModal();
         this.applyFilters();
         this.cdr.detectChanges();
       }
     } else {
+      this.classService
+        .updateClass(this.editingClass.classId, {
+          level: this.editingClass.level,
+          department: this.editingClass.department,
+          totalStudents: this.editingClass.totalStudents,
+          isActive: this.editingClass.isActive,
+        })
+        .subscribe({
+          next: (updatedClass) => {
+            const index = this.classes.findIndex((c) => c.classId === updatedClass.classId);
+            if (index !== -1) {
+              this.classes[index] = updatedClass;
 
-      this.classService.updateClass(this.editingClass.classId, {
-        level: this.editingClass.level,
-        department: this.editingClass.department,
-        totalStudents: this.editingClass.totalStudents,
-        canDeactivate: this.editingClass.canDeactivate
-      }).subscribe({
-        next: (updatedClass) => {
-          const index = this.classes.findIndex(c => c.classId === updatedClass.classId);
-          if (index !== -1) {
-            this.classes[index] = updatedClass;
-
-
-            if (!this.classNames.includes(updatedClass.level)) {
-              const oldName = this.classes.find(c => c.classId === updatedClass.classId)?.level;
-              const nameIndex = this.classNames.indexOf(oldName || '');
-              if (nameIndex !== -1) {
-                this.classNames[nameIndex] = updatedClass.level;
-                this.classNames = ['All', ...this.classNames.slice(1)].sort();
+              if (!this.classNames.includes(updatedClass.level)) {
+                const oldName = this.classes.find((c) => c.classId === updatedClass.classId)?.level;
+                const nameIndex = this.classNames.indexOf(oldName || '');
+                if (nameIndex !== -1) {
+                  this.classNames[nameIndex] = updatedClass.level;
+                  this.classNames = ['All', ...this.classNames.slice(1)].sort();
+                }
               }
-            }
 
-            this.showToastMessage(`${updatedClass.level} has been updated successfully!`, 'success');
-            this.closeEditModal();
-            this.applyFilters();
-            this.cdr.detectChanges();
-          }
-        },
-        error: (error) => {
-          console.error('Error updating class:', error);
-          this.showToastMessage('Failed to update class. Please try again.', 'error');
-        }
-      });
+              this.showToastMessage(
+                `${updatedClass.level} has been updated successfully!`,
+                'success'
+              );
+              this.closeEditModal();
+              this.applyFilters();
+              this.cdr.detectChanges();
+            }
+          },
+          error: (error) => {
+            console.error('Error updating class:', error);
+            this.showToastMessage('Failed to update class. Please try again.', 'error');
+          },
+        });
     }
   }
 
@@ -503,25 +517,25 @@ export class Classes implements OnInit {
       type: 'activate',
       onConfirm: () => {
         if (this.useMockData) {
-          cls.canDeactivate = true;
+          cls.isActive = true;
           this.showToastMessage(`${cls.level} has been activated successfully!`, 'success');
           this.applyFilters();
           this.cdr.detectChanges();
         } else {
           this.classService.activateClass(cls.classId).subscribe({
-            next: (updatedClass) => {
-              cls.canDeactivate = updatedClass.canDeactivate;
-              this.showToastMessage(`${cls.level} has been activated successfully!`, 'success');
-              this.applyFilters();
-              this.cdr.detectChanges();
+            next: (response) => {
+                cls.isActive = true;
+                this.showToastMessage(`${cls.level} has been activated successfully!`, 'success');
+                this.applyFilters();
+                this.cdr.detectChanges();
             },
             error: (error) => {
               console.error('Error activating class:', error);
               this.showToastMessage('Failed to activate class. Please try again.', 'error');
-            }
+            },
           });
         }
-      }
+      },
     });
   }
 
@@ -533,14 +547,14 @@ export class Classes implements OnInit {
       type: 'deactivate',
       onConfirm: () => {
         if (this.useMockData) {
-          cls.canDeactivate = false;
+          cls.isActive = false;
           this.showToastMessage(`${cls.level} has been deactivated successfully!`, 'success');
           this.applyFilters();
           this.cdr.detectChanges();
         } else {
           this.classService.deactivateClass(cls.classId).subscribe({
             next: (response) => {
-              cls.canDeactivate = false;
+              cls.isActive = false;
               this.showToastMessage(`${cls.level} has been deactivated successfully!`, 'success');
               this.applyFilters();
               this.cdr.detectChanges();
@@ -548,10 +562,10 @@ export class Classes implements OnInit {
             error: (error) => {
               console.error('Error deactivating class:', error);
               this.showToastMessage('Failed to deactivate class. Please try again.', 'error');
-            }
+            },
           });
         }
-      }
+      },
     });
   }
 
@@ -575,17 +589,17 @@ export class Classes implements OnInit {
     const classData: ClassCreateDto = {
       level: this.newClass.name,
       department: this.newClass.Department,
-      totalStudents: this.newClass.students
+      totalStudents: this.newClass.students,
     };
 
     if (this.useMockData) {
-      const newId = Math.max(...this.classes.map(c => c.classId)) + 1;
+      const newId = Math.max(...this.classes.map((c) => c.classId)) + 1;
       const newClassItem: Class = {
         classId: newId,
         level: this.newClass.name,
         department: this.newClass.Department,
         totalStudents: this.newClass.students,
-        canDeactivate: true
+        isActive: true,
       };
 
       this.classes.unshift(newClassItem);
@@ -615,11 +629,10 @@ export class Classes implements OnInit {
         error: (error) => {
           console.error('Error adding class:', error);
           this.showToastMessage('Failed to add class. Please try again.', 'error');
-        }
+        },
       });
     }
   }
-
 
   importTable() {
     this.showImportModal = true;
@@ -651,7 +664,10 @@ export class Classes implements OnInit {
       this.fileTypeInfo = this.detectFileType(file);
 
       if (this.fileTypeInfo.type === 'unknown') {
-        this.showToastMessage('Please select a CSV or Excel file (CSV, XLS, XLSX, XLSM, XLSB, ODS, XLT, XLTX, XLTM, XLAM)', 'error');
+        this.showToastMessage(
+          'Please select a CSV or Excel file (CSV, XLS, XLSX, XLSM, XLSB, ODS, XLT, XLTX, XLTM, XLAM)',
+          'error'
+        );
         return;
       }
 
@@ -674,8 +690,10 @@ export class Classes implements OnInit {
     const excelExtensions = ['xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'xlt', 'xltx', 'xltm', 'xlam'];
     const excelMimeKeywords = ['excel', 'spreadsheet', 'openxmlformats', 'oasis', 'ms-excel'];
 
-    if (excelExtensions.includes(extension) ||
-        excelMimeKeywords.some(keyword => mimeType.includes(keyword))) {
+    if (
+      excelExtensions.includes(extension) ||
+      excelMimeKeywords.some((keyword) => mimeType.includes(keyword))
+    ) {
       return { type: 'excel', extension, mimeType };
     }
 
@@ -714,10 +732,15 @@ export class Classes implements OnInit {
       this.importHeaders = lines[0].split(',').map((h: string) => h.trim());
 
       const requiredHeaders = ['Level', 'Department', 'Students'];
-      const missingHeaders = requiredHeaders.filter(h => !this.importHeaders.includes(h));
+      const missingHeaders = requiredHeaders.filter((h) => !this.importHeaders.includes(h));
 
       if (missingHeaders.length > 0) {
-        this.showToastMessage(`Missing required headers: ${missingHeaders.join(', ')}. Found: ${this.importHeaders.join(', ')}`, 'error');
+        this.showToastMessage(
+          `Missing required headers: ${missingHeaders.join(', ')}. Found: ${this.importHeaders.join(
+            ', '
+          )}`,
+          'error'
+        );
         this.resetImport();
         return;
       }
@@ -746,13 +769,18 @@ export class Classes implements OnInit {
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       if (jsonData.length > 0) {
-        this.importHeaders = (jsonData[0] as any[]).map(h => String(h).trim());
+        this.importHeaders = (jsonData[0] as any[]).map((h) => String(h).trim());
 
         const requiredHeaders = ['Level', 'Department', 'Students'];
-        const missingHeaders = requiredHeaders.filter(h => !this.importHeaders.includes(h));
+        const missingHeaders = requiredHeaders.filter((h) => !this.importHeaders.includes(h));
 
         if (missingHeaders.length > 0) {
-          this.showToastMessage(`Missing required headers: ${missingHeaders.join(', ')}. Found: ${this.importHeaders.join(', ')}`, 'error');
+          this.showToastMessage(
+            `Missing required headers: ${missingHeaders.join(
+              ', '
+            )}. Found: ${this.importHeaders.join(', ')}`,
+            'error'
+          );
           this.resetImport();
           return;
         }
@@ -800,7 +828,6 @@ export class Classes implements OnInit {
     if (this.useMockData) {
       this.simulateImport();
     } else {
-
       this.showToastMessage('Import functionality requires connectivity.', 'info');
       this.isImporting = false;
       this.cdr.detectChanges();
@@ -813,7 +840,7 @@ export class Classes implements OnInit {
         success: false,
         message: 'No file selected',
         importedCount: 0,
-        failedCount: 0
+        failedCount: 0,
       };
       this.isImporting = false;
       this.showToastMessage('No file selected', 'error');
@@ -833,7 +860,7 @@ export class Classes implements OnInit {
         success: false,
         message: 'Failed to read file',
         importedCount: 0,
-        failedCount: 0
+        failedCount: 0,
       };
       this.isImporting = false;
       this.showToastMessage('Failed to read file', 'error');
@@ -869,13 +896,14 @@ export class Classes implements OnInit {
             const students = parseInt(values[2]) || 0;
 
             if (name && department && !isNaN(students) && students > 0) {
-              const newId = Math.max(...this.classes.map(c => c.classId), 0) + importedClasses.length + 1;
+              const newId =
+                Math.max(...this.classes.map((c) => c.classId), 0) + importedClasses.length + 1;
               importedClasses.push({
                 classId: newId,
                 level: name,
                 department: department,
                 totalStudents: students,
-                canDeactivate: true
+                isActive: true,
               });
 
               importedClassNames.push(name);
@@ -918,13 +946,14 @@ export class Classes implements OnInit {
             }
 
             if (name && department && !isNaN(students) && students > 0) {
-              const newId = Math.max(...this.classes.map(c => c.classId), 0) + importedClasses.length + 1;
+              const newId =
+                Math.max(...this.classes.map((c) => c.classId), 0) + importedClasses.length + 1;
               importedClasses.push({
                 classId: newId,
                 level: name,
                 department: department,
                 totalStudents: students,
-                canDeactivate: true
+                isActive: true,
               });
 
               importedClassNames.push(name);
@@ -941,14 +970,18 @@ export class Classes implements OnInit {
       }
     };
 
-    const completeImport = (importedClasses: Class[], errors: string[], importedClassNames: string[]) => {
+    const completeImport = (
+      importedClasses: Class[],
+      errors: string[],
+      importedClassNames: string[]
+    ) => {
       this.importProgress = 95;
       this.cdr.detectChanges();
 
       this.classes = [...importedClasses, ...this.classes];
 
       const newUniqueClassNames = [...new Set(importedClassNames)].filter(
-        name => !this.classNames.includes(name)
+        (name) => !this.classNames.includes(name)
       );
       if (newUniqueClassNames.length > 0) {
         this.classNames = ['All', ...this.classNames.slice(1), ...newUniqueClassNames].sort();
@@ -956,10 +989,12 @@ export class Classes implements OnInit {
 
       this.importResult = {
         success: true,
-        message: `Successfully imported ${importedClasses.length} classes from ${this.fileTypeInfo?.extension.toUpperCase()} file`,
+        message: `Successfully imported ${
+          importedClasses.length
+        } classes from ${this.fileTypeInfo?.extension.toUpperCase()} file`,
         importedCount: importedClasses.length,
         failedCount: errors.length,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       };
 
       this.importProgress = 100;
@@ -968,9 +1003,15 @@ export class Classes implements OnInit {
       this.applyFilters();
 
       if (errors.length === 0) {
-        this.showToastMessage(`Imported ${importedClasses.length} classes successfully!`, 'success');
+        this.showToastMessage(
+          `Imported ${importedClasses.length} classes successfully!`,
+          'success'
+        );
       } else {
-        this.showToastMessage(`Imported with ${errors.length} errors. Check import results.`, 'info');
+        this.showToastMessage(
+          `Imported with ${errors.length} errors. Check import results.`,
+          'info'
+        );
       }
 
       this.cdr.detectChanges();
@@ -990,7 +1031,7 @@ export class Classes implements OnInit {
         success: false,
         message: 'Failed to process file',
         importedCount: 0,
-        failedCount: 0
+        failedCount: 0,
       };
       this.isImporting = false;
       this.showToastMessage('Failed to process file. Please check the format.', 'error');
@@ -1004,7 +1045,7 @@ export class Classes implements OnInit {
         ['Level', 'Department', 'Students'],
         ['Mathematics 101', 'Science & Technology', 45],
         ['Physics 201', 'Science & Technology', 32],
-        ['Chemistry 301', 'Science & Technology', 28]
+        ['Chemistry 301', 'Science & Technology', 28],
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -1012,7 +1053,9 @@ export class Classes implements OnInit {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Classes Template');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1036,11 +1079,7 @@ export class Classes implements OnInit {
 
       const worksheetData = [
         ['Level', 'Department', 'Students'],
-        ...this.filteredClasses.map(cls => [
-          cls.level,
-          cls.department,
-          cls.totalStudents
-        ])
+        ...this.filteredClasses.map((cls) => [cls.level, cls.department, cls.totalStudents]),
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -1048,7 +1087,9 @@ export class Classes implements OnInit {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Classes');
 
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1079,7 +1120,7 @@ export class Classes implements OnInit {
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 1000);
-      }
+      },
     });
   }
 

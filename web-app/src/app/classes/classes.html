@@ -102,7 +102,7 @@
           </div>
           <div class="form-group">
             <label for="editClassStatus">Status</label>
-            <select id="editClassStatus" class="form-control" [(ngModel)]="editingClass.canDeactivate">
+            <select id="editClassStatus" class="form-control" [(ngModel)]="editingClass.isActive">
               <option [value]="true">Active</option>
               <option [value]="false">Inactive</option>
             </select>
@@ -333,8 +333,8 @@
                   <td>{{class.department}}</td>
                   <td>{{class.totalStudents}}</td>
                   <td>
-                    <span class="status-badge" [class.active]="class.canDeactivate" [class.inactive]="!class.canDeactivate">
-                      {{class.canDeactivate ? 'Active' : 'Inactive'}}
+                    <span class="status-badge" [class.active]="class.isActive" [class.inactive]="!class.isActive">
+                      {{class.isActive ? 'Active' : 'Inactive'}}
                     </span>
                   </td>
                   <td>
@@ -346,7 +346,7 @@
                       </button>
 
                       <button
-                        *ngIf="class.canDeactivate"
+                        *ngIf="class.isActive"
                         class="action-btn-text deactivate-btn"
                         [title]="'Deactivate ' + class.level"
                         (click)="deactivateClass(class)">
@@ -354,7 +354,7 @@
                       </button>
 
                       <button
-                        *ngIf="!class.canDeactivate"
+                        *ngIf="!class.isActive"
                         class="action-btn-text activate-btn"
                         [title]="'Activate ' + class.level"
                         (click)="activateClass(class)">

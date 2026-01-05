@@ -6,6 +6,8 @@ const semesterRoutes = express.Router();
 //routes for semesters
 semesterRoutes.get("", semesterController.getAllSemesters);
 
+semesterRoutes.get("/usable", semesterController.getCurrentYearSemesters);
+
 //requires no parameters
 semesterRoutes.get("/current", semesterController.getCurrentSemester);
 

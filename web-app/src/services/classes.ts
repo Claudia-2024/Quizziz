@@ -8,7 +8,7 @@ export interface Class {
   level: string;
   department: string;
   totalStudents: number;
-  canDeactivate: boolean;
+  isActive: boolean;
 }
 
 export interface ClassCreateDto {
@@ -21,7 +21,7 @@ export interface ClassUpdateDto {
   level?: string;
   department?: string;
   totalStudents?: number;
-  canDeactivate?: boolean;
+  isActive?: boolean;
 }
 
 @Injectable({
@@ -58,16 +58,16 @@ export class ClassService {
 
 
   deleteClass(classId: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/class/delete/${classId}`)
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/class/activate/${classId}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
 
-  activateClass(classId: number): Observable<Class> {
-    const updateData: ClassUpdateDto = { canDeactivate: true };
-    return this.updateClass(classId, updateData);
+  activateClass(classId: number): Observable<{ success: boolean; message: string }> {
+    const updateData: ClassUpdateDto = { isActive: true };
+    return this.deleteClass(classId);
   }
 
 

@@ -1,72 +1,92 @@
 import Course from "../models/course.js";
 import Class from "../models/class.js";
 import ClassCourse from "../models/classCourse.js";
-import CourseDto from "../dto/courseDto.js";
 import Student from "../models/student.js";
+import Teacher from "../models/teacher.js";
+import Semester from "../models/semester.js";
+
+function mapCourseToDTO(course) {
+    return course.Classes.map(cls => {
+        const credit = cls.ClassCourse.credit;
+
+        const teacherNames = course.Teachers
+            .map(t => `${t.firstName} ${t.lastName}`)
+            .join(', ');
+        const className = `${cls.level} ${cls.department}`;
+
+        return {
+            courseCode: course.courseCode,
+            courseName: course.courseName,
+            credit,
+            teacher: teacherNames,
+            className,
+            semesterId: course.semesterId
+        };
+    });
+}
 
 async function getAllCourses(req, res) {
     try {
         const courses = await Course.findAll({
+            attributes: ['courseCode', 'courseName', 'semesterId'],
             include: [
                 {
                     model: Class,
-                    attributes: [],
+                    attributes: ['level', 'department'],
                     through: {
-                        attributes: ["credit"]
+                        attributes: ['credit']
                     },
                     // required: true
+                },
+                {
+                    model: Teacher,
+                    attributes: ['firstName', 'lastName'],
+                    through: {
+                        attributes: []
+                    },
                 }
             ]
         });
-
-        // console.log(courses)
-        courses.forEach(course => {
-            console.log(course.courseCode);
-
-            if (course.classes && course.classes.length > 0) {
-                console.log(course.classes[0].classCourse.credit);
-            } else {
-                console.log('No class linked');
-            }
-        });
-
-
-        const courseDtos = courses.map(course => new CourseDto(course));
+        const courseDtos = courses.flatMap(mapCourseToDTO)
+        for(let dto of courseDtos) {
+            const semester = await Semester.findByPk(dto.semesterId);
+            dto.number = semester ? semester.number : null;
+        }
         return res.status(200).json(courseDtos);
     } catch (error) {
         console.error("Error Fetching Courses: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
 async function getCourse(req, res) {
-    try{
+    try {
         const course = await Course.findByPk(req.body.courseCode);
 
-        if(course){
+        if (course) {
             return res.status(200).json(course);
-        }else{
+        } else {
             return res.status(200).json("Course not Found");
         }
 
-    } catch (error){
+    } catch (error) {
         console.error("Error Finding Course: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 
 }
 
 async function getCourseByCode(req, res) {
-    try{
+    try {
         const course = await Course.findByPk(req.params.courseCode);
-        if(course){
+        if (course) {
             return res.status(200).json(course);
-        }else{
+        } else {
             return res.status(404).json("Course not Found");
         }
-    } catch (error){
+    } catch (error) {
         console.error("Error Finding Course: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -85,28 +105,46 @@ async function getCoursesForConnectedStudent(req, res) {
                 }
             ]
         });
-        if (courses){
+        if (courses) {
             return res.status(200).json(courses);
-        }else{
+        } else {
             return res.status(404).json("No Courses Found for the Student");
         }
 
-    }catch (error) {
+    } catch (error) {
         console.error("Error Fetching Courses for Student: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
-async function createCourse(req, res){
-    try{
-        const course = await Course.findByPk(req.body.courseCode, { paranoid: false });
+async function createCourse(req, res) {
+    try {
         const aClass = await Class.findByPk(req.params.classId);
+        const teacher = await Teacher.findByPk(req.body.teacherId);
+
+        console.log("Teacher: ", teacher);
 
         if (!aClass) {
             return res.status(404).json("Specified Class not found!")
         }
 
-        if(course){
+        if (!teacher) {
+            return res.status(404).json("Specified Teacher not found!")
+        }
+
+        const course = await Course.findOne({
+            where: {
+                courseCode: req.body.courseCode
+            },
+            include: [{
+                model: Class,
+                where: { classId: req.params.classId },
+                required: true // Ensures an INNER JOIN so only courses linked to this specific class are returned
+            }],
+            paranoid: false
+        });
+
+        if (course) {
             const affectedRows = await Course.restore({
                 where: {
                     courseCode: req.body.courseCode
@@ -115,57 +153,89 @@ async function createCourse(req, res){
 
             if (affectedRows > 0) {
 
+                await course.addClass(aClass, { through: { credit: req.body.credit } });
+                await course.addTeacher(teacher);
+                // await ClassCourse.create({
+                //     CourseCourseCode: req.body.courseCode,
+                //     ClassClassId: aClass.classId,
+                //     credit: req.body.credit
+
+                // });
+
+                return res.status(200).json(course);
+            } else {
+                return res.status(200).json("Course Already Exists");
+            }
+        } else {
+
+            const existingCourse = await Course.findByPk(req.body.courseCode, { paranoid: false });
+
+            if (existingCourse) {
+                await ClassCourse.create({
+                    CourseCourseCode: existingCourse.courseCode,
+                    ClassClassId: aClass.classId,
+                    credit: req.body.credit
+
+                });
+                await existingCourse.addTeacher(teacher);
+                return res.status(201).json(existingCourse);
+            } else {
+                const newCourse = Course.build({
+                    courseCode: req.body.courseCode,
+                    courseName: req.body.courseName,
+                    semesterId: req.body.semesterId
+                });
+
+                await newCourse.save();
+
                 await ClassCourse.create({
                     CourseCourseCode: req.body.courseCode,
                     ClassClassId: aClass.classId,
                     credit: req.body.credit
 
                 });
-                return res.status(200).json(course);
-            }else{
-                return res.status(200).json("Course Already Exists");
+                await newCourse.addTeacher(teacher);
+
+                return res.status(201).json(newCourse);
             }
-        } else{
-            const newCourse = Course.build({
-                courseCode: req.body.courseCode,
-                courseName: req.body.courseName,
-                semesterId: req.body.semesterId
-            });
 
-            await newCourse.save();
-
-            await ClassCourse.create({
-                CourseCourseCode: req.body.courseCode,
-                ClassClassId: aClass.classId,
-                credit: req.body.credit
-
-            });
-
-            return res.status(201).json(newCourse);
         }
-    } catch (error){
+    } catch (error) {
         console.error("Could not Create Course: ", error);
         return res.status(500).json("Internal Server Error");
     }
 }
 
 async function updateCourse(req, res) {
-    try{
-        const course = await Course.findByPk(req.body.courseCode);
+    try {
+        const course = await Course.findByPk(req.params.courseCode);
 
-        course.courseCode = req.body.courseCode || course.courseCode;
+        course.courseCode = req.params.courseCode || course.courseCode;
         course.courseName = req.body.courseName || course.courseName;
+        course.semesterId = req.body.semesterId || course.semesterId;
+
+        await ClassCourse.update({
+            credit: req.body.credit || course.credit
+        }, {
+            where: {
+                CourseCourseCode: req.params.courseCode,
+                ClassClassId: req.params.classId
+            }
+        });
+
+        // await course.setClasses([req.params.classId]);
+        await course.setTeachers([req.body.teacherId]);
 
         await course.save();
         return res.status(200).json(course);
-    } catch (error){
+    } catch (error) {
         console.error("Error Updating Course: ", error);
-        return res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
 async function deleteCourse(req, res) {
-    try{
+    try {
         const affectedRows = await Course.destroy({
             where: {
                 courseCode: req.params.courseCode
@@ -186,4 +256,4 @@ async function deleteCourse(req, res) {
 }
 
 
-export default {getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode, getCoursesForConnectedStudent};
+export default { getAllCourses, createCourse, getCourse, updateCourse, deleteCourse, getCourseByCode, getCoursesForConnectedStudent };

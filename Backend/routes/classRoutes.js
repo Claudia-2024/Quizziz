@@ -15,6 +15,8 @@ classRoutes.post("", classController.createClass);
 //Requires classId in params and request body
 classRoutes.put("/update/:classId", classController.updateClass);
 
+classRoutes.delete("/activate/:classId", classController.activateClass);
+
 //Requires just the classId in params
 classRoutes.delete("/delete/:classId", classController.deleteClass);
 

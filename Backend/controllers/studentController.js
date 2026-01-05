@@ -325,36 +325,58 @@ async function changeClassForNextYear(req, res) {
 }
 
 //Create a new student (fonction originale conservée pour compatibilité)
-async function createStudent(req, res){
+async function createStudent(req, res) {
     // Rediriger vers registerStudent
     return registerStudent(req, res);
 }
 
 //Get all users
-async function getAllStudents(req, res){
-    try{
-        const students = await Student.findAll();
-        res.status(200).json(students);
+async function getAllStudents(req, res) {
+    try {
+        const students = await Student.findAll({
+            include: [
+                {
+                    model: Class,
+                    attributes: ['level', 'department'], // Only fetch the fields needed for the DTO
+                }
+            ]
+        });
+
+        const studentDTOs = students.map(student => {
+            return {
+                matricule: student.matricule,
+                firstName: student.firstName,
+                lastName: student.lastName,
+                email: student.email,
+                phoneNumber: student.phoneNumber,
+                emailVerified: student.emailVerified,
+                // Accessing the nested Class object properties
+                level: student.Class ? student.Class.level : null,
+                department: student.Class ? student.Class.department : null
+            };
+        });
+
+        res.status(200).json(studentDTOs);
     } catch (error) {
         console.error("Error fetching students: ", error);
-        res.status(500).json({error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
-async function findStudentByMatricule(req, res){
-    try{
+async function findStudentByMatricule(req, res) {
+    try {
         const student = await Student.findByPk(req.params.matricule);
         if (!student) {
             return res.status(404).json("Student not found");
         }
         res.status(200).json(student);
-    } catch (error){
+    } catch (error) {
         console.error(`Error getting the student with matricule ${req.params.matricule}`, error);
-        res.status(500).json({error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
-async function updateStudent(req,res){
+async function updateStudent(req, res) {
     try {
         const student = await Student.findByPk(req.params.matricule);
         if (!student) {
@@ -367,17 +389,17 @@ async function updateStudent(req,res){
         student.phoneNumber = req.body.phoneNumber || student.phoneNumber;
         student.password = req.body.password || student.password;
 
-       await student.save();
-       res.status(200).json(student);
+        await student.save();
+        res.status(200).json(student);
     } catch (error) {
         console.error(`Could not update student with matricule ${req.body.matricule}: `, error);
-        res.status(500).json({error: "Internal Server Error"})
+        res.status(500).json({ error: "Internal Server Error" })
     }
 
 }
 
 async function deleteStudent(req, res) {
-    try{
+    try {
         const affectedRows = await Student.destroy({
             where: {
                 matricule: req.params.matricule
@@ -385,15 +407,15 @@ async function deleteStudent(req, res) {
         });
 
         if (affectedRows > 0) {
-        console.log(`Successfully soft deleted student with matricule ${req.params.matricule}.`);
-        return res.status(200).json("Successfully soft deleted student");
+            console.log(`Successfully soft deleted student with matricule ${req.params.matricule}.`);
+            return res.status(200).json("Successfully soft deleted student");
         } else {
-        console.log(`No student found with ID ${req.params.matricule} to delete.`);
-        return res.status(404).json("No student found");
+            console.log(`No student found with ID ${req.params.matricule} to delete.`);
+            return res.status(404).json("No student found");
         }
-    } catch(error){
+    } catch (error) {
         console.error("Unable to delete student: ", error);
-        res.status(500).json({error: "Could not Delete Student"});
+        res.status(500).json({ error: "Could not Delete Student" });
     }
 }
 

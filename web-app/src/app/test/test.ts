@@ -88,7 +88,7 @@ export class Test implements OnInit {
     endTime: '10:00',
     courseCode: '',
     questions: [] as Question[],
-    status: 'inactive' as 'inactive' | 'active' | 'Completed'
+    status: 'Draft' as 'Draft' | 'Published' | 'Completed'
   };
 
   selectedEvaluation: EvaluationItem | null = null;
@@ -163,7 +163,7 @@ export class Test implements OnInit {
       startTime: '08:00:00',
       endTime: '10:00:00',
       courseCode: 'ISI4217',
-      status: 'inactive',
+      status: 'Draft',
       questions: [
         {
           text: 'Which of the following is the optimized way to show a long list of data in React Native?',
@@ -198,7 +198,7 @@ export class Test implements OnInit {
       startTime: '09:00:00',
       endTime: '09:45:00',
       courseCode: 'WEB101',
-      status: 'active',
+      status: 'Draft',
       questions: [
         {
           text: 'What is the output of typeof null?',
@@ -393,12 +393,12 @@ export class Test implements OnInit {
 
 
   canEditEvaluation(evaluation: EvaluationItem): boolean {
-    return evaluation.status === 'inactive';
+    return evaluation.status === 'Draft';
   }
 
 
   canManageQuestions(evaluation: EvaluationItem): boolean {
-    return evaluation.status === 'inactive';
+    return evaluation.status === 'Draft';
   }
 
 
@@ -524,7 +524,7 @@ export class Test implements OnInit {
           startTime: row.startTime || '',
           endTime: row.endTime || '',
           courseCode: row.courseCode || '',
-          status: 'inactive',
+          status: 'Draft',
           questions: []
         };
 
@@ -583,7 +583,7 @@ export class Test implements OnInit {
             startTime: row.startTime || '',
             endTime: row.endTime || '',
             courseCode: row.courseCode || '',
-            status: 'inactive',
+            status: 'Draft',
             questions: []
           };
 
@@ -698,7 +698,7 @@ export class Test implements OnInit {
                 startTime: row.startTime,
                 endTime: row.endTime,
                 courseCode: row.courseCode,
-                status: 'inactive',
+                status: 'Draft',
                 questions: []
               });
             } else {
@@ -751,7 +751,7 @@ export class Test implements OnInit {
                   startTime: row.startTime,
                   endTime: row.endTime,
                   courseCode: row.courseCode,
-                  status: 'inactive',
+                  status: 'Draft',
                   questions: []
                 });
               } else {
@@ -1346,7 +1346,7 @@ export class Test implements OnInit {
       endTime: '10:00',
       courseCode: '',
       questions: [],
-      status: 'inactive'
+      status: 'Draft'
     };
     this.showAddModal = true;
     setTimeout(() => this.cdr.detectChanges(), 0);
@@ -1369,7 +1369,7 @@ export class Test implements OnInit {
       startTime: this.newEvaluation.startTime + ':00',
       endTime: this.newEvaluation.endTime + ':00',
       courseCode: this.newEvaluation.courseCode,
-      status: 'inactive',
+      status: 'Draft',
       questions: []
     };
 

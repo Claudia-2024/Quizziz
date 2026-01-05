@@ -1,22 +1,22 @@
 <div class="app-container">
-  
+
   <div class="sidebar-container">
-    <app-sidebar 
+    <app-sidebar
       (sidebarStateChange)="onSidebarStateChange($event)">
     </app-sidebar>
   </div>
-  
+
   <!-- Main content -->
   <div class="main-content-wrapper" [class.collapsed]="isSidebarCollapsed">
-    
-    <app-navbar 
+
+    <app-navbar
       [isSidebarCollapsed]="isSidebarCollapsed"
       [pageTitle]="'Student Management'"
       [currentUser]="currentUser"
       (logout)="logout()"
       (profileUpdate)="onProfileUpdate($event)">
     </app-navbar>
-    
+
     <!-- Toast Notification -->
     <div class="toast-container" *ngIf="showToast" [class]="'toast-' + toastType">
       <div class="toast-icon">
@@ -27,7 +27,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <!-- View Student Details Modal -->
     <div class="modal-overlay" *ngIf="showViewModal">
       <div class="modal-container">
@@ -51,10 +51,10 @@
               <div class="detail-label">Last Name:</div>
               <div class="detail-value">{{viewingStudent?.lastName}}</div>
             </div>
-            <div class="detail-row">
+            <!-- <div class="detail-row">
               <div class="detail-label">Full Name:</div>
               <div class="detail-value">{{viewingStudent?.fullName}}</div>
-            </div>
+            </div> -->
             <div class="detail-row">
               <div class="detail-label">Email:</div>
               <div class="detail-value">{{viewingStudent?.email}}</div>
@@ -65,16 +65,16 @@
             </div>
             <div class="detail-row">
               <div class="detail-label">Class:</div>
-              <div class="detail-value">{{viewingStudent?.className}}</div>
+              <div class="detail-value">{{viewingStudent?.level}}</div>
             </div>
             <div class="detail-row">
               <div class="detail-label">Department:</div>
               <div class="detail-value">{{viewingStudent?.department}}</div>
             </div>
-            <div class="detail-row">
+            <!-- <div class="detail-row">
               <div class="detail-label">Academic Year:</div>
               <div class="detail-value">{{viewingStudent?.yearName}}</div>
-            </div>
+            </div> -->
             <div class="detail-row">
               <div class="detail-label">Email Verified:</div>
               <div class="detail-value">
@@ -90,7 +90,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Confirmation Modal -->
     <div class="modal-overlay" *ngIf="showConfirmModal">
       <div class="modal-container confirm-modal">
@@ -113,19 +113,19 @@
           <button class="btn btn-secondary confirm-cancel" (click)="cancelAction()">
             {{confirmModalData.cancelText}}
           </button>
-          <button class="btn confirm-action" 
-                  [class]="'confirm-' + confirmModalData.type" 
+          <button class="btn confirm-action"
+                  [class]="'confirm-' + confirmModalData.type"
                   (click)="confirmAction()">
             {{confirmModalData.confirmText}}
           </button>
         </div>
       </div>
     </div>
-    
+
     <!-- Main Content section -->
     <main class="main-content">
       <div class="content-container">
-       
+
         <div class="table-actions-header">
           <div class="actions-right">
             <button class="action-btn export-btn" (click)="exportTable()">
@@ -136,12 +136,12 @@
 
         <!-- Table Container -->
         <div class="table-container">
-          
+
           <div class="table-header">
             <div class="table-filters">
               <div class="filter-group">
                 <label for="filterYear">Filter by Year:</label>
-                <select id="filterYear" class="filter-select" 
+                <select id="filterYear" class="filter-select"
                         [(ngModel)]="selectedYear" (change)="onFilterChange()">
                   <option value="All">All Years</option>
                   <option *ngFor="let year of years" [value]="year">
@@ -149,10 +149,10 @@
                   </option>
                 </select>
               </div>
-              
+
               <div class="filter-group">
                 <label for="filterClass">Filter by Class:</label>
-                <select id="filterClass" class="filter-select" 
+                <select id="filterClass" class="filter-select"
                         [(ngModel)]="selectedClass" (change)="onFilterChange()">
                   <option value="All">All Classes</option>
                   <option *ngFor="let class of classes" [value]="class">
@@ -160,11 +160,11 @@
                   </option>
                 </select>
               </div>
-              
+
               <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" 
-                       placeholder="Search students..." 
+                <input type="text"
+                       placeholder="Search students..."
                        class="search-input"
                        [(ngModel)]="searchTerm"
                        (keyup.enter)="onSearch()"
@@ -195,13 +195,13 @@
                   <td>{{student.lastName}}</td>
                   <td>{{student.email}}</td>
                   <td>{{student.phoneNumber}}</td>
-                  <td>{{student.className}}</td>
+                  <td>{{student.level}}</td>
                   <td>{{student.yearName}}</td>
                   <td>
                     <div class="action-buttons">
-                      <button 
-                        class="action-btn-text view-btn" 
-                        [title]="'View ' + student.fullName + ' details'" 
+                      <button
+                        class="action-btn-text view-btn"
+                        [title]="'View ' + student.firstName + ' details'"
                         (click)="viewStudent(student)">
                         <i class="fas fa-eye"></i> View
                       </button>
@@ -210,7 +210,7 @@
                 </tr>
               </tbody>
             </table>
-            
+
             <div *ngIf="filteredStudents.length === 0" class="no-results">
               <i class="fas fa-search no-results-icon"></i>
               <h3>No students found</h3>
@@ -224,29 +224,29 @@
               Showing {{pagination.startIndex}} to {{pagination.endIndex}} of {{pagination.totalItems}} entries
             </div>
             <div class="pagination-controls">
-              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
                       (click)="goToPage(1)">
                 <i class="fas fa-angle-double-left"></i>
               </button>
-              <button class="pagination-btn" [disabled]="pagination.currentPage === 1" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === 1"
                       (click)="goToPage(pagination.currentPage - 1)">
                 <i class="fas fa-chevron-left"></i>
               </button>
-              
+
               <div class="page-numbers">
-                <button *ngFor="let page of pagination.pages" 
-                        class="page-number" 
+                <button *ngFor="let page of pagination.pages"
+                        class="page-number"
                         [class.active]="page === pagination.currentPage"
                         (click)="goToPage(page)">
                   {{page}}
                 </button>
               </div>
-              
-              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
                       (click)="goToPage(pagination.currentPage + 1)">
                 <i class="fas fa-chevron-right"></i>
               </button>
-              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages" 
+              <button class="pagination-btn" [disabled]="pagination.currentPage === pagination.totalPages"
                       (click)="goToPage(pagination.totalPages)">
                 <i class="fas fa-angle-double-right"></i>
               </button>

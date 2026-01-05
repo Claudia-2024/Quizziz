@@ -17,9 +17,9 @@ courseRoutes.post("/:classId", courseController.createCourse);
 courseRoutes.get("/student", authenticateToken, courseController.getCoursesForConnectedStudent);
 
 //requires courseCode as path parameter and updated course in request body
-courseRoutes.put("/update/:courseCode", courseController.updateCourse);
+courseRoutes.put("/update/:courseCode/:classId", courseController.updateCourse);
 
 //requires courseCode as path parameter
-courseRoutes.delete("/delete/:courseCode", courseController.deleteCourse);
+courseRoutes.delete("/delete/:courseCode/:classId", courseController.deleteCourse);
 
 export default courseRoutes;

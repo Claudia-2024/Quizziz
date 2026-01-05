@@ -5,8 +5,8 @@ import { catchError } from 'rxjs/operators';
 
 interface Course {
   id: number;
-  code: string;
-  name: string;
+  courseCode: string;
+  courseName: string;
   credit: number;
   teacher: string;
   className: string;
@@ -14,7 +14,7 @@ interface Course {
 }
 
 interface Teacher {
-  id: number;
+  teacherId: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -54,6 +54,13 @@ export class CoursesService {
 
 
   getSemesters(): Observable<Semester[]> {
+    return this.http.get<Semester[]>(`${this.apiUrl}/semester/usable`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  getAllSemesters(): Observable<Semester[]> {
     return this.http.get<Semester[]>(`${this.apiUrl}/semester`)
       .pipe(
         catchError(this.handleError)
@@ -69,8 +76,8 @@ export class CoursesService {
   }
 
 
-  updateCourse(courseCode: string, courseData: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/course/update/${courseCode}`, courseData)
+  updateCourse(courseCode: string, classId: number, courseData: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/course/update/${courseCode}/${classId}`, courseData)
       .pipe(
         catchError(this.handleError)
       );

@@ -20,6 +20,11 @@ const Class = sequelize.define('Class', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+    }
 
 },
 {
@@ -28,9 +33,7 @@ const Class = sequelize.define('Class', {
       unique: true,
       fields: ["level", "department"]
     }
-  ],
-    //Safe delete
-    paranoid: true
+  ]
 })
 
 export default Class;

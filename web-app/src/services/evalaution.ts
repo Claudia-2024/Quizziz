@@ -23,7 +23,7 @@ export interface EvaluationItem {
   startTime: string;
   endTime: string;
   courseCode: string;
-  status: 'inactive' | 'active' | 'Completed';
+  status: 'Draft' | 'Published' | 'Completed';
   questions?: Question[];
 }
 

@@ -53,6 +53,7 @@ async function createClass(req, res){
                 level: req.body.level,
                 department: req.body.department,
                 totalStudents: req.body.totalStudents || 0,
+                isActive: true
             });
 
             await newClass.save();
@@ -87,6 +88,23 @@ async function updateClass(req, res){
         res.status(500).json("Internal Server Error")
     }
 
+}
+
+async function activateClass(req, res) {
+    try{
+        const aClass = await Class.findByPk(req.params.classId);
+
+        if (aClass){
+            aClass.isActive = !aClass.isActive;
+            await aClass.save();
+            return res.status(200).json(`Class has been ${aClass.isActive ? 'activated' : 'deactivated'} successfully.`);
+        }else{
+            return res.status(404).json("Class not found.");
+        }
+    } catch (error){
+        console.error("Unable to Activate/Deactivate class: ", error);
+        res.status(500).json({ error: "Could not Activate/Deactivate Class" });
+    }
 }
 
 async function deleteClass(req, res) {
@@ -129,4 +147,4 @@ async function deleteClass(req, res) {
     }
 }
 
-export default {getAllClasses, getClass, createClass, deleteClass, updateClass};
+export default {getAllClasses, getClass, createClass, deleteClass, updateClass, activateClass};
