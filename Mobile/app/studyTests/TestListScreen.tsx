@@ -127,14 +127,19 @@ const TestListScreen: React.FC = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => {
             const qCount = Array.isArray(item.questions) ? item.questions.length : 0;
-            const title = `${item.type || 'Evaluation'} — ${[item.courseCode || '', item.courseName || ''].filter(Boolean).join(' — ')}`.trim();
             return (
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={() => router.push({ pathname: '/studyTests/TestDetail', params: { evaluationId: String(item.id) } })}
                 style={{ marginHorizontal: 15, marginBottom: 12 }}
               >
-                <ResultCard title={title} progress={qCount} total={qCount} />
+                <ResultCard
+                  typeLabel={item.type || 'Evaluation'}
+                  courseCode={item.courseCode || ''}
+                  courseName={item.courseName || ''}
+                  progress={qCount}
+                  total={qCount}
+                />
               </TouchableOpacity>
             );
           }}
