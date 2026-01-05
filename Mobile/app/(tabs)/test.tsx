@@ -449,7 +449,13 @@ const TestQuizPage: React.FC = () => {
                                         }}
                                         style={{ marginBottom: 12 }}
                                     >
-                                        <ResultCard title={title} progress={qCount} total={qCount} />
+                                        <ResultCard
+                                            typeLabel={item.type || 'Evaluation'}
+                                            courseCode={code}
+                                            courseName={name}
+                                            progress={qCount}
+                                            total={qCount}
+                                        />
                                     </TouchableOpacity>
                                 );
                             }}

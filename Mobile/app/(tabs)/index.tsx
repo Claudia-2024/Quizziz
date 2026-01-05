@@ -54,12 +54,13 @@ const index = () => {
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Recent Tests</Text>
       {evaluations.slice(0, 3).map((ev, idx) => {
         const id = Number(ev?.id ?? ev?.evaluationId ?? idx);
-        const title = ev?.type ? `${ev.type} — ${ev?.courseCode || ''}` : (ev?.courseCode || 'Evaluation');
         const qCount = Array.isArray(ev?.questions) ? ev.questions.length : (Number(ev?.questionCount) || 0);
         return (
           <TouchableOpacity key={String(id)} activeOpacity={0.8} onPress={() => router.push({ pathname: '/(tabs)/test', params: { evaluationId: String(id) } })}>
             <ResultCard
-              title={title}
+              typeLabel={ev?.type || 'Evaluation'}
+              courseCode={ev?.courseCode || ''}
+              courseName={ev?.courseName || ''}
               progress={qCount}
               total={qCount}
             />

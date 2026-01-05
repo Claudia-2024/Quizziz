@@ -3,12 +3,17 @@ import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@/theme/global';
 
 interface Props {
-  title: string;
+  // Deprecated: prefer structured props below
+  title?: string;
+  // Structured props for clearer rendering
+  typeLabel?: string;
+  courseCode?: string;
+  courseName?: string;
   progress: number;
   total: number;
 }
 
-export default function ResultCard({ title, progress, total }: Props) {
+export default function ResultCard({ title, typeLabel, courseCode, courseName, progress, total }: Props) {
   const theme = useTheme();
   const { colors } = theme;
 
@@ -31,7 +36,12 @@ export default function ResultCard({ title, progress, total }: Props) {
       />
 
       <View style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{typeLabel || title || ''}</Text>
+        {(courseCode || courseName) ? (
+          <Text style={styles.subTitle} numberOfLines={1}>
+            {[courseCode || '', courseName || ''].filter(Boolean).join(' — ')}
+          </Text>
+        ) : null}
 
         {/* Progress bar */}
         <View style={styles.progressBackground}>
@@ -84,6 +94,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '500',
+    marginBottom: 4,
+  },
+
+  subTitle: {
+    fontSize: 13,
+    color: '#555',
     marginBottom: 6,
   },
 
