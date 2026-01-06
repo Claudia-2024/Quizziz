@@ -211,10 +211,15 @@ const TestQuizPage: React.FC = () => {
                 throw new Error('Missing student matricule');
             }
             // Call start API → expect { responseSheetId }
-            const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), {
+            const startBody = {
                 matricule: String(student.matricule),
                 clientStartTime,
+            };
+            console.log('[StartTest] request', {
+                url: ENDPOINTS.evaluations.start(String(evaluationId)),
+                body: startBody,
             });
+            const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), startBody);
             const respId = Number(res?.responseSheetId ?? res?.id ?? res?.responseId);
             if (!Number.isFinite(respId)) {
                 throw new Error('Failed to start evaluation');
@@ -497,9 +502,25 @@ const TestQuizPage: React.FC = () => {
                         {startError ? (
                             <Text style={{ color: '#b00020', marginBottom: 8 }}>{startError}</Text>
                         ) : null}
-                        <TouchableOpacity style={[styles.startButton, starting && { opacity: 0.7 }]} onPress={handleStartTest} disabled={starting}>
-                            <Text style={styles.startButtonText}>{starting ? 'Starting…' : 'Start Test'}</Text>
-                        </TouchableOpacity>
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <TouchableOpacity
+                                style={[styles.startButton, { flex: 1, backgroundColor: '#6b2a66' }, starting && { opacity: 0.7 }]}
+                                onPress={() => {
+                                    // close modal and go back to the list of evaluations without resetting fetched list
+                                    setShowReadyModal(false);
+                                    setSelectedEvalIndex(null);
+                                    setQuestions([]);
+                                    setTestReady(false);
+                                    setSelectedOption(null);
+                                }}
+                                disabled={starting}
+                            >
+                                <Text style={styles.startButtonText}>Return</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.startButton, { flex: 1 }, starting && { opacity: 0.7 }]} onPress={handleStartTest} disabled={starting}>
+                                <Text style={styles.startButtonText}>{starting ? 'Starting…' : 'Start Test'}</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
