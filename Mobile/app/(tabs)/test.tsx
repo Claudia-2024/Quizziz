@@ -220,7 +220,11 @@ const TestQuizPage: React.FC = () => {
                 body: startBody,
             });
             const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), startBody);
-            const respId = Number(res?.responseSheetId ?? res?.id ?? res?.responseId);
+            console.log('[StartTest] response', res);
+            const respIdRaw =
+                (res?.responseSheetId ?? res?.responsheetId ?? res?.id ?? res?.responseId ??
+                 res?.data?.responseSheetId ?? res?.data?.responsheetId);
+            const respId = Number(respIdRaw);
             if (!Number.isFinite(respId)) {
                 throw new Error('Failed to start evaluation');
             }
