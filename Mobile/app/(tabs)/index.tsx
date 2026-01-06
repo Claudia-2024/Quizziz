@@ -29,13 +29,23 @@ const index = () => {
       setError(null);
       try {
         const coursesEndpoint = student?.classId ? ENDPOINTS.courses.byClass(String(student.classId)) : ENDPOINTS.courses.list;
+        if (!student?.matricule) throw new Error('Missing student matricule');
         const [coursesRes, evalsRes, notifRes] = await Promise.all([
           api.get<any[]>(coursesEndpoint),
-          api.get<any[]>(ENDPOINTS.evaluations.list),
+          api.get<any[]>(ENDPOINTS.evaluations.listByStudent(String(student.matricule))),
           api.get<any[]>(ENDPOINTS.notifications.list),
         ]);
         setCourses(Array.isArray(coursesRes) ? coursesRes : []);
-        setEvaluations(Array.isArray(evalsRes) ? evalsRes : []);
+        const normalized = (Array.isArray(evalsRes) ? evalsRes : []).map((e: any, idx: number) => ({
+          id: Number(e?.id ?? e?.evaluationId ?? idx),
+          status: e?.status,
+          type: e?.type,
+          courseCode: e?.courseCode,
+          courseName: e?.courseName,
+          questions: Array.isArray(e?.questions) ? e?.questions : [],
+        }));
+        const publishedOnly = normalized.filter((e: any) => String(e?.status || '').toLowerCase() === 'published');
+        setEvaluations(publishedOnly);
         setNotifications(Array.isArray(notifRes) ? notifRes : []);
       } catch (e: any) {
         setError(e?.message || 'Failed to load data');

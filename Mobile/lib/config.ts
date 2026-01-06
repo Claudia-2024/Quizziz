@@ -17,9 +17,9 @@ export const ENDPOINTS = {
     byClass: (classId: number | string) => `/course/class/${classId}`,
   },
   evaluations: {
-    // Returns evaluations for the logged-in student.
+    // Returns evaluations for a specific student (published scope on server, still client-filters as safeguard).
     // Each evaluation includes embedded questions and choices (deprecated question/choice endpoints removed from use).
-    list: '/evaluation/student',
+    listByStudent: (matricule: string) => `/evaluation/student/${matricule}`,
     // Start an evaluation session → returns { responseSheetId }
     start: (evaluationId: string) => `/evaluation/${evaluationId}/start`,
     // Save partial answers for a given response sheet id

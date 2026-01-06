@@ -18,6 +18,7 @@ import {useLocalSearchParams} from 'expo-router';
 import {api} from '@/lib/api';
 import {ENDPOINTS} from '@/lib/config';
 import ResultCard from '@/components/cards/resultCard';
+import { useAuth } from '@/context/AuthContext';
 
 type EvalOption = { id: number; text: string };
 type EvalQuestion = {
@@ -61,6 +62,7 @@ const TestQuizPage: React.FC = () => {
     const routeEvaluationId = params?.evaluationId as string | undefined;
 
     const [testReady, setTestReady] = useState(false);
+    const { student } = useAuth();
     const [showNotReadyModal, setShowNotReadyModal] = useState(false);
     const [showReadyModal, setShowReadyModal] = useState(false);
     const [testStarted, setTestStarted] = useState(false);
@@ -83,6 +85,8 @@ const TestQuizPage: React.FC = () => {
     const [selections, setSelections] = useState<Record<number, number | undefined>>({}); // questionId -> choiceId
     const [saving, setSaving] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [starting, setStarting] = useState(false);
+    const [startError, setStartError] = useState<string | null>(null);
 
     useEffect(() => {
         return () => {
@@ -102,7 +106,10 @@ const TestQuizPage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const evalsRaw = pickArray(await api.get<any>(ENDPOINTS.evaluations.list));
+            if (!student?.matricule) {
+                throw new Error('Missing student matricule');
+            }
+            const evalsRaw = pickArray(await api.get<any>(ENDPOINTS.evaluations.listByStudent(String(student.matricule))));
             // Normalize and sort by publishedDate ascending
             const normalized: Evaluation[] = evalsRaw.map((e: any, idx: number) => ({
                 id: Number(e?.id ?? e?.evaluationId ?? idx),
@@ -135,7 +142,7 @@ const TestQuizPage: React.FC = () => {
         } finally {
             if (mountedRef.current) setLoading(false);
         }
-    }, [routeEvaluationId]);
+    }, [routeEvaluationId, student?.matricule]);
 
     useEffect(() => {
         fetchAll();
@@ -192,13 +199,20 @@ const TestQuizPage: React.FC = () => {
 
     const handleStartTest = async () => {
         try {
+            setStarting(true);
+            setStartError(null);
+            // Debug log
+            console.log('[StartTest] invoked');
             if (selectedEvalIndex === null) return;
             const evalItem = evaluations[selectedEvalIndex];
             const evaluationId = Number(evalItem?.id);
             const clientStartTime = nowHMS();
+            if (!student?.matricule) {
+                throw new Error('Missing student matricule');
+            }
             // Call start API → expect { responseSheetId }
             const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), {
-                matricule: String(student?.matricule || ''),
+                matricule: String(student.matricule),
                 clientStartTime,
             });
             const respId = Number(res?.responseSheetId ?? res?.id ?? res?.responseId);
@@ -214,7 +228,13 @@ const TestQuizPage: React.FC = () => {
             setTestStarted(true);
             setShowReadyModal(false);
         } catch (e: any) {
-            setError(e?.message || 'Unable to start test');
+            const msg = e?.message || 'Unable to start test';
+            console.warn('[StartTest] error', msg);
+            setError(msg);
+            setStartError(msg);
+        }
+        finally {
+            setStarting(false);
         }
     };
 
@@ -474,8 +494,11 @@ const TestQuizPage: React.FC = () => {
                             style={{width: 90, height: 90, marginBottom: 15}}
                         />
                         <Text style={styles.modalText}>Your test has been uploaded click below to start!</Text>
-                        <TouchableOpacity style={styles.startButton} onPress={handleStartTest}>
-                            <Text style={styles.startButtonText}>Start Test</Text>
+                        {startError ? (
+                            <Text style={{ color: '#b00020', marginBottom: 8 }}>{startError}</Text>
+                        ) : null}
+                        <TouchableOpacity style={[styles.startButton, starting && { opacity: 0.7 }]} onPress={handleStartTest} disabled={starting}>
+                            <Text style={styles.startButtonText}>{starting ? 'Starting…' : 'Start Test'}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
