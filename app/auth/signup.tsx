@@ -76,7 +76,10 @@ export default function Signup() {
                 placeholder="First Name"
                 value={firstName}
                 onChangeText={setFirstName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -88,7 +91,10 @@ export default function Signup() {
                 placeholder="Last Name"
                 value={lastName}
                 onChangeText={setLastName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -100,7 +106,10 @@ export default function Signup() {
                 placeholder="Matricule"
                 value={matricule}
                 onChangeText={setMatricule}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -112,7 +121,10 @@ export default function Signup() {
                 placeholder="Class"
                 value={className}
                 onChangeText={setClassName}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
             </View>
@@ -124,7 +136,10 @@ export default function Signup() {
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 keyboardType="email-address"
                 placeholderTextColor="#888"
               />
@@ -132,16 +147,25 @@ export default function Signup() {
 
             {/* Password */}
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
+              <Ionicons
+                name="lock-closed-outline"
+                size={24}
+                color={iconColor}
+              />
               <TextInput
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                style={[{fontFamily: typography.fontFamily.body}, styles.input]}
+                style={[
+                  { fontFamily: typography.fontFamily.body },
+                  styles.input,
+                ]}
                 placeholderTextColor="#888"
               />
-              <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+              <TouchableOpacity
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
                 <Ionicons
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={24}
@@ -163,7 +187,13 @@ export default function Signup() {
               onPress={() => router.push("/auth/login")}
               style={{ marginTop: 16 }}
             >
-              <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 16,
+                  fontFamily: typography.fontFamily.buttonText,
+                }}
+              >
                 Already have an account? Login.
               </Text>
             </TouchableOpacity>
@@ -188,11 +218,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    gap: 12, 
+    gap: 12,
   },
   logo: {
-    width: 80, 
-    height: 120, 
+    width: 80,
+    height: 120,
     marginBottom: 10,
   },
   text: {
