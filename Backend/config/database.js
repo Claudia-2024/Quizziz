@@ -2,13 +2,12 @@
 
 import { Sequelize } from "sequelize";
 
-// const pool = createPool({
+// const pool = mysql.createPool({
 //     host: "localhost",
-//     user: "root",
-//     password: "claudia@2603",
+//     user: "app_user",
+//     password: process.env.DB_PASSWORD,
 //     database: 'quizziz_db'
-//     // connectionLimit: 10
-// }).promise()
+// });
 
 //Creating an instance of sequelize(which communicates with the database)
 // const sequelize = new Sequelize({

@@ -75,7 +75,7 @@ interface ConfirmModalData {
   providers: [CoursesService],
 })
 export class Courses implements OnInit {
-  useMockData = true;
+  useMockData = false;
 
   showToast = false;
   toastMessage = '';
@@ -372,7 +372,7 @@ export class Courses implements OnInit {
   }
 
  get classNames(): string[] {
-  const nameList = this.classes.map((c) => `${c.level} - ${c.department}`);
+  const nameList = this.classes.map((c) => `${c.level} ${c.department}`);
   return ['All Classes', ...Array.from(new Set(nameList)).sort()];
 }
 
@@ -483,7 +483,8 @@ export class Courses implements OnInit {
     return;
   }
 
-  const selectedClass = this.classes.find((c) => c.level === this.editingCourse!.className);
+  const selectedClass = this.classes.find((c) => `${c.level} ${c.department}`=== this.editingCourse!.className);
+  console.log("Class Name: ", this.editingCourse!.className);
   if (!selectedClass) {
     this.showToastMessage('Class not found for this course!', 'error');
     return;
@@ -500,16 +501,16 @@ export class Courses implements OnInit {
   if (this.useMockData) {
     setTimeout(() => {
       const index = this.courses.findIndex(
-        (c) => c.courseCode === this.editingCourse!.courseCode && 
-               c.className === this.editingCourse!.className 
+        (c) => c.courseCode === this.editingCourse!.courseCode &&
+               c.className === this.editingCourse!.className
       );
       if (index !== -1) {
         const updatedCourse: Course = {
           courseCode: this.editingCourse!.courseCode,
           courseName: this.editingCourse!.courseName,
           credit: this.editingCourse!.credit,
-          teacher: this.editingCourse!.teacher, 
-          className: this.editingCourse!.className, 
+          teacher: this.editingCourse!.teacher,
+          className: this.editingCourse!.className,
           semesterId: this.editingCourse!.semesterId,
           number: this.editingCourse!.semesterId,
         };
@@ -524,12 +525,12 @@ export class Courses implements OnInit {
       }
     }, 200);
   } else {
-    
+
     const courseData = {
       courseName: this.editingCourse!.courseName,
       credit: this.editingCourse!.credit,
       semesterId: this.editingCourse!.semesterId,
-    
+
     };
 
     console.log('Updating course with data:', courseData);
@@ -538,23 +539,23 @@ export class Courses implements OnInit {
     console.log('NOTE: Teacher and Class are NOT being sent for update');
 
     this.coursesService.updateCourse(
-      this.editingCourse!.courseCode, 
-      selectedClass.classId, 
+      this.editingCourse!.courseCode,
+      selectedClass.classId,
       courseData
     ).subscribe({
       next: (response) => {
         const index = this.courses.findIndex(
-          (c) => c.courseCode === this.editingCourse!.courseCode && 
+          (c) => c.courseCode === this.editingCourse!.courseCode &&
                  c.className === this.editingCourse!.className
         );
         if (index !== -1) {
-        
+
           const updatedCourse: Course = {
             courseCode: this.editingCourse!.courseCode,
             courseName: response.name || this.editingCourse!.courseName,
             credit: response.credit || this.editingCourse!.credit,
-            teacher: this.editingCourse!.teacher, 
-            className: this.editingCourse!.className, 
+            teacher: this.editingCourse!.teacher,
+            className: this.editingCourse!.className,
             semesterId: response.semesterId || this.editingCourse!.semesterId,
             number: response.semesterNumber || this.editingCourse!.semesterId,
           };
@@ -704,6 +705,7 @@ export class Courses implements OnInit {
         semesterId: this.newCourse.semesterNumber,
       };
 
+      console.log('Creating course with data:', courseData);
       this.coursesService.createCourse(selectedClass.classId, courseData).subscribe({
         next: (response) => {
           // const newCourse: Course = {

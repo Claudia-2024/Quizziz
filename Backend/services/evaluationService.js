@@ -1,7 +1,9 @@
 import Choice from "../models/choice.js";
+import Class from "../models/class.js";
 import Course from "../models/course.js";
 import Evaluation from "../models/evaluation.js";
 import Question from "../models/question.js";
+import Student from "../models/student.js";
 
 async function getAllEvaluations() {
     try {
@@ -64,6 +66,55 @@ async function getAllPublishedEvaluations() {
     }
 
 }
+async function getPublishedEvaluationsForStudent(matricule) {
+    try {
+        const evaluations = await Evaluation.findAll({
+            where: {
+                status: ['Published', 'Completed']
+            },
+            include: [
+                {
+                    model: Course,
+                    attributes: ['courseCode', 'courseName'],
+                    required: true,
+                    include: [
+                        {
+                            model: Class,
+                            attributes: [],
+                            required: true,
+                            include: [
+                                {
+                                    model: Student,
+                                    attributes: [],
+                                    where: {
+                                        matricule: matricule
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: Question,
+                    through: {
+                        attributes: ['points']
+                    },
+                    include: [
+                        {
+                            model: Choice
+                        }
+                    ]
+                }
+            ]
+        });
+
+        return evaluations;
+    } catch (error) {
+        console.log("Error Fetching Published Evaluations for Student: ", error);
+        throw new Error("Could not get published evaluations for student");
+    }
+}
+
 
 async function getEvaluationByCourseCode(courseCode) {
     try {
@@ -195,5 +246,6 @@ export default {
     createEvaluation,
     updateEvaluation,
     deleteEvaluation,
-    getAllPublishedEvaluations
+    getAllPublishedEvaluations,
+    getPublishedEvaluationsForStudent
 };

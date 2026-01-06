@@ -159,7 +159,7 @@ async function getPerformanceData(req, res) {
                     include: [
                         {
                             model: Question,
-                            attributes: [],
+                            attributes: ['questionId'],
                             through: {
                                 attributes: ['points']
                             }
@@ -397,6 +397,20 @@ async function getAllPublishedEvaluationSessions(req, res) {
     }
 }
 
+async function getAllPublishedEvaluationSessionsForStudents(req, res) {
+    try {
+        const evaluations = await evaluationService.getPublishedEvaluationsForStudent(req.params.matricule);
+
+        const evaluationDtos = evaluations.map(evaluation => new studentEvaluationDto(evaluation));
+        return res.status(200).json(evaluationDtos);
+    } catch (error) {
+        console.error("Error fetching published evaluations for students:", error);
+        res.status(500).json({
+            message: "Failed to fetch published evaluations for students"
+        });
+    }
+}
+
 async function startEvaluation(req, res) {
     try {
         //gotten from parameter
@@ -541,5 +555,6 @@ export default {
     deleteEvaluationSession,
     getRevisionQuestions,
     getEvaluationByCourseCode,
-    getPerformanceData
+    getPerformanceData,
+    getAllPublishedEvaluationSessionsForStudents
 }

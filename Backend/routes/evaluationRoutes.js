@@ -8,6 +8,7 @@ evaluationRoutes.get("", evaluationController.getAllEvaluationSessions);
 
 //students route to get all not draft evaluations
 evaluationRoutes.get("/student", evaluationController.getAllPublishedEvaluationSessions);
+evaluationRoutes.get("/student/:matricule", evaluationController.getAllPublishedEvaluationSessionsForStudents);
 evaluationRoutes.get("/student/revision", evaluationController.getRevisionQuestions)
 evaluationRoutes.post("", evaluationController.createEvaluationSession);
 evaluationRoutes.get("/:evaluationId", evaluationController.getPerformanceData);

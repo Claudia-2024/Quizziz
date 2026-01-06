@@ -1,4 +1,4 @@
-import studentChoiceDto from "./StudentChoiceDto.js";
+import studentChoiceDto from "./studentChoiceDto.js";
 
 export default class studentQuestionDto {
     constructor(question) {

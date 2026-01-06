@@ -161,7 +161,7 @@ async function createCourse(req, res) {
             if (affectedRows > 0) {
 
                 await course.addClass(aClass, { through: { credit: req.body.credit } });
-                await course.addTeacher(teacher);
+                await course.setTeachers([teacher]);
                 // await ClassCourse.create({
                 //     CourseCourseCode: req.body.courseCode,
                 //     ClassClassId: aClass.classId,
@@ -184,7 +184,7 @@ async function createCourse(req, res) {
                     credit: req.body.credit
 
                 });
-                await existingCourse.addTeacher(teacher);
+                await existingCourse.setTeachers([teacher]);
                 return res.status(201).json(existingCourse);
             } else {
                 const newCourse = Course.build({
@@ -201,7 +201,8 @@ async function createCourse(req, res) {
                     credit: req.body.credit
 
                 });
-                await newCourse.addTeacher(teacher);
+
+                await newCourse.setTeachers([teacher]);
 
                 return res.status(201).json(newCourse);
             }
@@ -231,7 +232,7 @@ async function updateCourse(req, res) {
         });
 
         // await course.setClasses([req.params.classId]);
-        await course.setTeachers([req.body.teacherId]);
+        // await course.setTeachers([req.body.teacherId]);
 
         await course.save();
         return res.status(200).json(course);

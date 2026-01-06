@@ -549,7 +549,7 @@ export class Navbar implements OnInit, OnDestroy {
 
           const index = this.semesters.findIndex(s => s.semesterId === semesterData.semesterId);
           if (index !== -1) {
-            
+
             // if (semesterData.isActive) {
             //   this.semesters.forEach(s => s.isActive = false);
             // }
@@ -631,7 +631,7 @@ export class Navbar implements OnInit, OnDestroy {
 
           const index = this.academicYears.findIndex(y => y.yearId === yearData.yearId);
           if (index !== -1) {
-            
+
             // if (yearData.isPresent) {
             //   this.academicYears.forEach(y => y.isPresent = false);
             // }

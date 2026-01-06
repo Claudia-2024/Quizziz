@@ -1213,7 +1213,7 @@ export class Test implements OnInit {
 
 
     this.selectedEvaluation = {
-      id: 0,
+      evaluationId: 0,
       publishedDate: this.newEvaluation.publishedDate,
       type: this.newEvaluation.type,
       startTime: this.newEvaluation.startTime + ':00',
@@ -1273,7 +1273,7 @@ export class Test implements OnInit {
   }
 
 
-  const evaluationData: Omit<EvaluationItem, 'id'> = {
+  const evaluationData: Omit<EvaluationItem, 'evaluationId'> = {
     publishedDate: this.selectedEvaluation.publishedDate,
     type: this.selectedEvaluation.type,
     startTime: this.selectedEvaluation.startTime,
