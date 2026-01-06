@@ -1,37 +1,27 @@
-// import { createPool } from "mysql2";
+import { Sequelize } from "sequelize";
 
 import { Sequelize } from "sequelize";
 
-// const pool = mysql.createPool({
-//     host: "localhost",
-//     user: "app_user",
-//     password: process.env.DB_PASSWORD,
-//     database: 'quizziz_db'
-// });
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect: process.env.DB_DIALECT || "mysql",
+    logging: false,
+  }
+);
 
-//Creating an instance of sequelize(which communicates with the database)
-// const sequelize = new Sequelize({
-//     database: 'postgres',
-//     username: 'postgres',
-//     password: 'mango205',
-//     host: 'localhost',
-//     port: 5432,
-//     dialect: 'postgres',
-// });
-const sequelize = new Sequelize({
-    database: 'quizziz_db',
-    username: 'root',
-    password: 'claudia@2603',
-    host: 'localhost',
-    port: 3308,
-    dialect: 'mysql',
-});
-
-//Test the database connection
-sequelize.authenticate().then(() => {
-    console.log("Connection to the database has been established successfully");
-}).catch(err => {
-    console.error("Unable to connect to the database: ", err);
-});
+// Test connection
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Database connected successfully");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+})();
 
 export default sequelize;

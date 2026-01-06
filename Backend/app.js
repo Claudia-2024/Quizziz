@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import sequelize from './config/database.js'
 import bodyParser from 'body-parser';
 import express from 'express';
