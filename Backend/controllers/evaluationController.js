@@ -444,7 +444,9 @@ async function startEvaluation(req, res) {
 
     } catch (error) {
         console.error("Start Evaluation error: ", error);
-        return res.status(500).json("Failed to Start Evaluation");
+        return res.status(500).json("[StartTest] invoked\n" +
+            " LOG  [StartTest] request {\"body\": {\"clientStartTime\": \"11:27:09\", \"matricule\": \"2223i064\"}, \"url\": \"/evaluation/14/start\"}\n" +
+            " WARN  [StartTest] error Failed to start evaluationFailed to Start Evaluation");
     }
 }
 

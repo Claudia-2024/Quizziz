@@ -6,10 +6,12 @@ import { useEffect } from 'react';
 import { ThemeProvider } from '@/theme/global';
 import { StatusBar } from 'react-native';
 import { AuthProvider } from '@/context/AuthContext';
+import { OfflineProvider } from '@/context/OfflineContext';
+import { useOfflineInit } from '@/hooks/useOfflineInit';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const [fontsLoaded] = useFonts({
     AbeezeeItalic: require('../assets/fonts/ABeeZee-Italic.ttf'),
     AbeezeeRegular: require('../assets/fonts/ABeeZee-Regular.ttf'),
@@ -17,18 +19,33 @@ export default function RootLayout() {
     PoppinsSemiBold: require('../assets/fonts/Poppins-SemiBold.ttf'),
   });
 
+  const { isInitialized } = useOfflineInit();
+
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    if (fontsLoaded && isInitialized) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, isInitialized]);
+
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <ThemeProvider>
       <AuthProvider>
-        <SafeAreaProvider>
-          <StatusBar />
-          <Slot />  
-        </SafeAreaProvider>
+        <OfflineProvider>
+          <SafeAreaProvider>
+            <StatusBar />
+            <Slot />
+          </SafeAreaProvider>
+        </OfflineProvider>
       </AuthProvider>
     </ThemeProvider>
   );
 }
+
+export default function RootLayout() {
+  return <RootLayoutContent />;
+}
+

@@ -1,3 +1,9 @@
+// Mobile/app/studyTests/TestDetail.offline.tsx
+/**
+ * Example of offline-enabled TestDetail component
+ * Shows how to integrate offline functionality
+ */
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -7,8 +13,8 @@ import OfflineIndicator from '@/components/OfflineIndicator';
 import SyncStatus from '@/components/SyncStatus';
 import { useTheme } from '@/theme/global';
 import { useOffline } from '@/context/OfflineContext';
-import { useStudentMatricule } from '@/hooks/useStudentMatricule';
 import { api } from '@/lib/api';
+import { apiWithOffline } from '@/lib/api-offline';
 import { ENDPOINTS } from '@/lib/config';
 import {
   getOfflineEvaluation,
@@ -36,11 +42,10 @@ function pickArray(data: any): any[] {
   return [];
 }
 
-export default function TestDetail() {
+export default function TestDetailOffline() {
   const { typography, colors } = useTheme();
   const { evaluationId } = useLocalSearchParams<{ evaluationId?: string }>();
   const { isOnline, isEvaluationAvailableOffline } = useOffline();
-  const { matricule } = useStudentMatricule();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,21 +141,16 @@ export default function TestDetail() {
       return;
     }
 
-    if (!matricule) {
-      Alert.alert('Error', 'Unable to determine student ID');
-      return;
-    }
-
     try {
       // Create offline attempt
-      const attempt = await createOfflineAttempt(evaluation.id, matricule);
+      const attempt = await createOfflineAttempt(evaluation.id, 'current-matricule'); // Replace with actual matricule
       setCurrentAttemptId(attempt.attemptLocalId);
       setIsTestMode(true);
       setSelectedAnswers(new Map());
     } catch (err) {
       Alert.alert('Error', 'Failed to start test: ' + (err as Error).message);
     }
-  }, [evaluation, isOnline, matricule]);
+  }, [evaluation, isOnline]);
 
   // Submit test
   const handleSubmitTest = useCallback(async () => {
@@ -408,3 +408,4 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: '#fff', fontWeight: '700', marginHorizontal: 6 },
   secondaryBtnText: { color: '#331424', fontWeight: '700', marginHorizontal: 6 },
 });
+
