@@ -60,33 +60,33 @@ export async function saveEvaluationsOffline(evaluations: any[]) {
   try {
     db.execSync?.(`BEGIN TRANSACTION`);
 
-    for (const eval of evaluations) {
+    for (const evaluation of evaluations) {
       // Insert or update evaluation
       db.runSync?.(
         `INSERT OR REPLACE INTO evaluations 
          (evaluationId, publishedDate, type, courseCode, courseName, startTime, endTime, status, receivedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          eval.id || eval.evaluationId,
-          eval.publishedDate,
-          eval.type,
-          eval.courseCode,
-          eval.courseName,
-          eval.startTime,
-          eval.endTime,
-          eval.status || 'available',
+          evaluation.id || evaluation.evaluationId,
+          evaluation.publishedDate,
+          evaluation.type,
+          evaluation.courseCode,
+          evaluation.courseName,
+          evaluation.startTime,
+          evaluation.endTime,
+          evaluation.status || 'available',
           nowISO(),
         ]
       );
 
       // Insert questions and choices
-      const questions = Array.isArray(eval.questions) ? eval.questions : [];
+      const questions = Array.isArray(evaluation.questions) ? evaluation.questions : [];
       for (const q of questions) {
         db.runSync?.(
           `INSERT OR REPLACE INTO questions
            (evaluationId, questionId, text, type, points)
            VALUES (?, ?, ?, ?, ?)`,
-          [eval.id || eval.evaluationId, q.questionId, q.text, q.type || 'mcq', q.points || 1]
+          [evaluation.id || evaluation.evaluationId, q.questionId, q.text, q.type || 'mcq', q.points || 1]
         );
 
         const choices = Array.isArray(q.choices) ? q.choices : [];
@@ -95,7 +95,7 @@ export async function saveEvaluationsOffline(evaluations: any[]) {
             `INSERT OR REPLACE INTO choices
              (evaluationId, questionId, choiceId, text, ord)
              VALUES (?, ?, ?, ?, ?)`,
-            [eval.id || eval.evaluationId, q.questionId, c.choiceId, c.text, c.order || 0]
+            [evaluation.id || evaluation.evaluationId, q.questionId, c.choiceId, c.text, c.order || 0]
           );
         }
       }
