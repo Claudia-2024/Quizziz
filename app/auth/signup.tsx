@@ -53,11 +53,13 @@ export default function Signup() {
           <View style={styles.centerContainer}>
             {/* Logo */}
             <Image
+              key="logo"
               source={require("../../assets/images/logo.png")}
               style={styles.logo}
             />
 
             <Text
+              key="title"
               style={[
                 styles.text,
                 {
@@ -70,7 +72,7 @@ export default function Signup() {
             </Text>
 
             {/* First Name */}
-            <View style={styles.inputContainer}>
+            <View key="firstName-input" style={styles.inputContainer}>
               <Ionicons name="person-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="First Name"
@@ -82,7 +84,7 @@ export default function Signup() {
             </View>
 
             {/* Last Name */}
-            <View style={styles.inputContainer}>
+            <View key="lastName-input" style={styles.inputContainer}>
               <Ionicons name="person-add-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Last Name"
@@ -94,7 +96,7 @@ export default function Signup() {
             </View>
 
             {/* Matricule */}
-            <View style={styles.inputContainer}>
+            <View key="matricule-input" style={styles.inputContainer}>
               <Ionicons name="id-card-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Matricule"
@@ -106,7 +108,7 @@ export default function Signup() {
             </View>
 
             {/* Class */}
-            <View style={styles.inputContainer}>
+            <View key="class-input" style={styles.inputContainer}>
               <Ionicons name="school-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Class"
@@ -118,7 +120,7 @@ export default function Signup() {
             </View>
 
             {/* Email */}
-            <View style={styles.inputContainer}>
+            <View key="email-input" style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Email"
@@ -131,7 +133,7 @@ export default function Signup() {
             </View>
 
             {/* Password */}
-            <View style={styles.inputContainer}>
+            <View key="password-input" style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Password"
@@ -160,6 +162,7 @@ export default function Signup() {
 
             {/* Login Link */}
             <TouchableOpacity
+              key="login-link"
               onPress={() => router.push("/auth/login")}
               style={{ marginTop: 16 }}
             >

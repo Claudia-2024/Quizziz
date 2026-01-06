@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { saveToken as storageSaveToken, clearToken as storageClearToken } from '@/lib/storage';
+import { saveStudentData, clearStudentData } from '@/lib/student-storage';
 
 export type ClassInfo = {
   classId: number;
@@ -46,6 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setStudent(payload.student);
       // write-through to storage for api.ts to pick up
       await storageSaveToken(payload.token);
+      // Save student data for offline access
+      await saveStudentData({
+        matricule: payload.student.matricule,
+        firstName: payload.student.firstName,
+        lastName: payload.student.lastName,
+        email: payload.student.email,
+      });
     } catch (_) {
       // noop
     }
@@ -56,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(null);
       setStudent(null);
       await storageClearToken();
+      // Clear student data on logout
+      await clearStudentData();
     } finally {
       // redirect to login screen
       router.replace('/auth/login');

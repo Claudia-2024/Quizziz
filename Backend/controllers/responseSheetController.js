@@ -1,4 +1,6 @@
 import ResponseSheet from "../models/responseSheet.js";
+import Answer from "../models/answer.js";
+import sequelize from "../config/database.js";
 
 async function getAllResponseSheets(req, res){
     try{
@@ -122,11 +124,123 @@ async function updateResponseSheet(req, res){
     }
 }
 
+async function submitAnswersOffline(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+        const { responseSheetId } = req.params;
+        const { answers, attemptLocalId, submittedAt, isOfflineSubmission } = req.body;
+
+        // Valider que la feuille de réponses existe
+        const responseSheet = await ResponseSheet.findByPk(responseSheetId, { transaction });
+        if (!responseSheet) {
+            await transaction.rollback();
+            return res.status(404).json({ error: 'Response sheet not found' });
+        }
+
+        // Valider les réponses
+        if (!Array.isArray(answers) || answers.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({ error: 'Answers array is required and cannot be empty' });
+        }
+
+        // Vérifier pour les doublons (même attemptLocalId)
+        let isDuplicate = false;
+        if (attemptLocalId) {
+            const existingSubmission = await ResponseSheet.findOne({
+                where: { attemptLocalId: attemptLocalId },
+                transaction
+            });
+            if (existingSubmission && existingSubmission.responseSheetId !== parseInt(responseSheetId)) {
+                isDuplicate = true;
+                // Doublon détecté - retourner succès (idempotent)
+                await transaction.rollback();
+
+                // Log le doublon
+                logOfflineSubmission({
+                    responseSheetId: existingSubmission.responseSheetId,
+                    attemptLocalId: attemptLocalId,
+                    matricule: responseSheet.matricule,
+                    evaluationId: responseSheet.evaluationId,
+                    answerCount: answers.length,
+                    isOfflineSubmission: isOfflineSubmission === true,
+                    clientSubmittedAt: submittedAt,
+                    status: 'duplicate',
+                    isDuplicate: true
+                });
+
+                return res.status(200).json({
+                    responseSheetId: existingSubmission.responseSheetId,
+                    success: true,
+                    message: 'Duplicate submission detected - already processed',
+                    submittedAt: existingSubmission.submittedAt
+                });
+            }
+        }
+
+        // Sauvegarder chaque réponse
+        for (const answer of answers) {
+            const { questionId, type, selectedOption, textAnswer } = answer;
+
+            if (!questionId) {
+                await transaction.rollback();
+                return res.status(400).json({ error: `Question ID is required for answer` });
+            }
+
+            await Answer.create({
+                responseSheetId: responseSheetId,
+                questionId: questionId,
+                selectedOption: selectedOption || null,
+                openTextResponse: textAnswer || null,
+                type: type || 'mcq',
+                isCorrect: false // À déterminer lors du grading
+            }, { transaction });
+        }
+
+        // Mettre à jour la feuille de réponses
+        const now = new Date();
+        responseSheet.status = 'submitted';
+        responseSheet.attemptLocalId = attemptLocalId || null;
+        responseSheet.isOfflineSubmission = isOfflineSubmission === true;
+        responseSheet.offlineSubmittedAt = submittedAt ? new Date(submittedAt) : null;
+        responseSheet.syncedAt = now;
+        responseSheet.submittedAt = now;
+
+        await responseSheet.save({ transaction });
+        await transaction.commit();
+
+        // Log la soumission
+        logOfflineSubmission({
+            responseSheetId: responseSheet.responseSheetId,
+            attemptLocalId: attemptLocalId,
+            matricule: responseSheet.matricule,
+            evaluationId: responseSheet.evaluationId,
+            answerCount: answers.length,
+            isOfflineSubmission: isOfflineSubmission === true,
+            clientSubmittedAt: submittedAt,
+            status: 'submitted',
+            isDuplicate: isDuplicate
+        });
+
+        return res.status(200).json({
+            responseSheetId: responseSheet.responseSheetId,
+            success: true,
+            submittedAt: responseSheet.submittedAt,
+            message: isOfflineSubmission ? 'Offline answers submitted successfully' : 'Answers submitted successfully'
+        });
+
+    } catch (error) {
+        await transaction.rollback();
+        console.error('Error submitting answers:', error);
+        return res.status(500).json({ error: 'Failed to submit answers' });
+    }
+}
+
 export default{
     getAllResponseSheets,
     getResponseSheetsByEvaluationId,
     createResponseSheet,
     updateResponseSheet,
     findResponseSheetByMatriculeAndEvaluationId,
-    getScoreByEvaluation
+    getScoreByEvaluation,
+    submitAnswersOffline
 };

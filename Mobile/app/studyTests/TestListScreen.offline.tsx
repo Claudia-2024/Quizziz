@@ -1,6 +1,22 @@
-// studyTests/TestListScreen.tsx
+// Mobile/app/studyTests/TestListScreen.offline.tsx
+/**
+ * TestListScreen with offline support
+ * Shows evaluations from online or offline storage
+ * Allows downloading evaluations for offline use
+ */
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  Image,
+  Alert,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import QuizHeader from '@/components/headers/header';
@@ -8,10 +24,10 @@ import OfflineIndicator from '@/components/OfflineIndicator';
 import SyncStatus from '@/components/SyncStatus';
 import { useTheme } from '@/theme/global';
 import { useOffline } from '@/context/OfflineContext';
-import { useStudentMatricule } from '@/hooks/useStudentMatricule';
 import { api } from '@/lib/api';
 import { ENDPOINTS } from '@/lib/config';
 import ResultCard from '@/components/cards/resultCard';
+import { getToken } from '@/lib/storage';
 
 type Evaluation = {
   id: number;
@@ -35,7 +51,7 @@ function pickArray(data: any): any[] {
   return [];
 }
 
-const TestListScreen: React.FC = () => {
+const TestListScreenOffline: React.FC = () => {
   const theme = useTheme();
   const { typography } = theme;
   const {
@@ -45,16 +61,34 @@ const TestListScreen: React.FC = () => {
     offlineEvaluations,
     isEvaluationAvailableOffline,
   } = useOffline();
-  const { matricule } = useStudentMatricule();
 
   const [courseFilter, setCourseFilter] = useState('');
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [matricule, setMatricule] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => () => {
     mountedRef.current = false;
+  }, []);
+
+  // Load current matricule from token/storage
+  useEffect(() => {
+    const loadMatricule = async () => {
+      try {
+        // You may need to decode the JWT or store matricule separately
+        // This is a placeholder - adjust based on your auth implementation
+        const token = await getToken();
+        if (token) {
+          // Decode JWT to get matricule, or get from storage
+          // setMatricule(decodedMatricule);
+        }
+      } catch (err) {
+        console.error('Error loading matricule:', err);
+      }
+    };
+    loadMatricule();
   }, []);
 
   const fetchCompleted = useCallback(async () => {
@@ -75,7 +109,9 @@ const TestListScreen: React.FC = () => {
           questions: Array.isArray(e?.questions) ? e.questions : [],
         }));
 
-        const completed = normalized.filter((e) => String(e.status || '').toLowerCase() === 'completed');
+        const completed = normalized.filter(
+          (e) => String(e.status || '').toLowerCase() === 'completed'
+        );
         const sorted = completed.sort((a, b) => {
           const da = a.publishedDate ? Date.parse(a.publishedDate) : 0;
           const db = b.publishedDate ? Date.parse(b.publishedDate) : 0;
@@ -115,7 +151,11 @@ const TestListScreen: React.FC = () => {
   const filtered = useMemo(() => {
     const txt = courseFilter.trim().toLowerCase();
     if (!txt) return evaluations;
-    return evaluations.filter((e) => String(e.courseCode || '').toLowerCase().includes(txt));
+    return evaluations.filter((e) =>
+      String(e.courseCode || '')
+        .toLowerCase()
+        .includes(txt)
+    );
   }, [courseFilter, evaluations]);
 
   const handleDownloadEvaluations = useCallback(async () => {
@@ -202,7 +242,9 @@ const TestListScreen: React.FC = () => {
             <Text style={styles.emptySubtitle}>{error}</Text>
           ) : (
             <Text style={styles.emptySubtitle}>
-              {isOnline ? 'Download evaluations to get started' : 'Go online to download evaluations'}
+              {isOnline
+                ? 'Download evaluations to get started'
+                : 'Go online to download evaluations'}
             </Text>
           )}
           <View style={styles.emptyActions}>
@@ -244,7 +286,7 @@ const TestListScreen: React.FC = () => {
                 />
                 {item.isOffline && (
                   <View style={styles.offlineBadge}>
-                    <Ionicons size={12} color="#fff" />
+                    <Ionicons name="download-done" size={12} color="#fff" />
                     <Text style={styles.offlineBadgeText}>Offline</Text>
                   </View>
                 )}
@@ -257,7 +299,7 @@ const TestListScreen: React.FC = () => {
   );
 };
 
-export default TestListScreen;
+export default TestListScreenOffline;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7e6f8', paddingTop: 40 },
@@ -334,3 +376,4 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { color: '#fff', fontWeight: 'bold' },
 });
+
