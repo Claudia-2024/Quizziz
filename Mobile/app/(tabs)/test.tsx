@@ -197,7 +197,10 @@ const TestQuizPage: React.FC = () => {
             const evaluationId = Number(evalItem?.id);
             const clientStartTime = nowHMS();
             // Call start API → expect { responseSheetId }
-            const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), { clientStartTime });
+            const res = await api.post<any>(ENDPOINTS.evaluations.start(String(evaluationId)), {
+                matricule: String(student?.matricule || ''),
+                clientStartTime,
+            });
             const respId = Number(res?.responseSheetId ?? res?.id ?? res?.responseId);
             if (!Number.isFinite(respId)) {
                 throw new Error('Failed to start evaluation');
@@ -221,7 +224,7 @@ const TestQuizPage: React.FC = () => {
             const q = questions[currentQuestion];
             if (!q || selectedOption == null) return;
             setSaving(true);
-            const payload = { answers: [{ questionId: q.id, choiceId: selectedOption }] };
+            const payload = { answers: [{ questionId: q.id, type: 'MCQ', selectedOption: selectedOption }] };
             await api.post(ENDPOINTS.evaluations.saveAnswers(String(responseSheetId)), payload);
             setSelections((prev) => ({ ...prev, [q.id]: selectedOption ?? prev[q.id] }));
         } catch (e) {
@@ -251,7 +254,7 @@ const TestQuizPage: React.FC = () => {
             setSubmitting(true);
 
             // Build full answers from selections + current selectedOption
-            const all: Array<{ questionId: number; choiceId: number }> = [];
+            const all: Array<{ questionId: number; type: 'MCQ' | 'OPEN'; selectedOption?: number; textAnswer?: string }> = [];
             const mapSel: Record<number, number | undefined> = { ...selections };
             const currQ = questions[currentQuestion];
             if (currQ && selectedOption != null) {
@@ -259,11 +262,10 @@ const TestQuizPage: React.FC = () => {
             }
             for (const q of questions) {
                 const cid = mapSel[q.id];
-                if (cid != null) all.push({ questionId: q.id, choiceId: cid });
+                // For now we only support MCQ in the UI; OPEN can be extended later
+                if (cid != null) all.push({ questionId: q.id, type: 'MCQ', selectedOption: cid });
             }
-
-            const clientSubmitTime = nowHMS();
-            const payload = { clientSubmitTime, answers: all };
+            const payload = { answers: all };
             await api.post(ENDPOINTS.evaluations.submit(String(responseSheetId)), payload);
         } catch (e) {
             setError((e as any)?.message || 'Failed to submit test');
