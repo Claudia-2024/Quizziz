@@ -16,7 +16,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import evaluationRoutes from './routes/evaluationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import questionRoutes from './routes/questionRoutes.js';
-import ResponseSheetRoutes from './routes/ResponseSheetRoutes.js';
+import ResponseSheetRoutes from './routes/responseSheetRoutes.js';
 import semesterRoutes from './routes/semesterRoutes.js';
 import teacherRoutes from './routes/teacherRoutes.js';
 import administratorRoutes from './routes/administratorRoutes.js';
