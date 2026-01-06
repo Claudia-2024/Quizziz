@@ -50,112 +50,97 @@ export default function Signup() {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.centerContainer}>
-            {/* Logo */}
-            <Image
-              key="logo"
-              source={require("../../assets/images/logo.png")}
-              style={styles.logo}
+          <View style={styles.centerContainer} />
+          {/* Logo */}
+          <Image
+            key="logo"
+            source={require("../../assets/images/logo.png")}
+            style={styles.logo}
+          />
+
+          <Text
+            key="title"
+            style={[
+              styles.text,
+              {
+                color: colors.secondary,
+                fontFamily: typography.fontFamily.italicHeading,
+              },
+            ]}
+          >
+            SIGN UP
+          </Text>
+
+          {/* First Name */}
+          <View key="firstName-input" style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={24} color={iconColor} />
+            <TextInput
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+              style={[{ fontFamily: typography.fontFamily.body }, styles.input]}
+              placeholderTextColor="#888"
             />
+          </View>
 
-            <Text
-              key="title"
-              style={[
-                styles.text,
-                {
-                  color: colors.secondary,
-                  fontFamily: typography.fontFamily.italicHeading,
-                },
-              ]}
-            >
-              SIGN UP
-            </Text>
+          {/* Last Name */}
+          <View key="lastName-input" style={styles.inputContainer}>
+            <Ionicons name="person-add-outline" size={24} color={iconColor} />
+            <TextInput
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              style={[{ fontFamily: typography.fontFamily.body }, styles.input]}
+              placeholderTextColor="#888"
+            />
+          </View>
 
-            {/* First Name */}
-            <View key="firstName-input" style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-                style={[
-                  { fontFamily: typography.fontFamily.body },
-                  styles.input,
-                ]}
-                placeholderTextColor="#888"
-              />
-            </View>
+          {/* Matricule */}
+          <View key="matricule-input" style={styles.inputContainer}>
+            <Ionicons name="id-card-outline" size={24} color={iconColor} />
+            <TextInput
+              placeholder="Matricule"
+              value={matricule}
+              onChangeText={setMatricule}
+              style={[{ fontFamily: typography.fontFamily.body }, styles.input]}
+              placeholderTextColor="#888"
+            />
+          </View>
 
-            {/* Last Name */}
-            <View key="lastName-input" style={styles.inputContainer}>
-              <Ionicons name="person-add-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                style={[
-                  { fontFamily: typography.fontFamily.body },
-                  styles.input,
-                ]}
-                placeholderTextColor="#888"
-              />
-            </View>
+          {/* Class */}
+          <View key="class-input" style={styles.inputContainer}>
+            <Ionicons name="school-outline" size={24} color={iconColor} />
+            <TextInput
+              placeholder="Class"
+              value={className}
+              onChangeText={setClassName}
+              style={[{ fontFamily: typography.fontFamily.body }, styles.input]}
+              placeholderTextColor="#888"
+            />
+          </View>
 
-            {/* Matricule */}
-            <View key="matricule-input" style={styles.inputContainer}>
-              <Ionicons name="id-card-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Matricule"
-                value={matricule}
-                onChangeText={setMatricule}
-                style={[
-                  { fontFamily: typography.fontFamily.body },
-                  styles.input,
-                ]}
-                placeholderTextColor="#888"
-              />
-            </View>
+          {/* Email */}
+          <View key="email-input" style={styles.inputContainer}>
+            <Ionicons name="mail-outline" size={24} color={iconColor} />
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              style={[{ fontFamily: typography.fontFamily.body }, styles.input]}
+              keyboardType="email-address"
+              placeholderTextColor="#888"
+            />
+          </View>
 
-            {/* Class */}
-            <View key="class-input" style={styles.inputContainer}>
-              <Ionicons name="school-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Class"
-                value={className}
-                onChangeText={setClassName}
-                style={[
-                  { fontFamily: typography.fontFamily.body },
-                  styles.input,
-                ]}
-                placeholderTextColor="#888"
-              />
-            </View>
-
-            {/* Email */}
-            <View key="email-input" style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={24} color={iconColor} />
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                style={[
-                  { fontFamily: typography.fontFamily.body },
-                  styles.input,
-                ]}
-                keyboardType="email-address"
-                placeholderTextColor="#888"
-              />
-            </View>
-
-            {/* Password */}
-            <View style={styles.inputContainer}>
+          {/* Password */}
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
+            <View key="password-input" style={styles.inputContainer}>
               <Ionicons
                 name="lock-closed-outline"
                 size={24}
                 color={iconColor}
               />
-            <View key="password-input" style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={24} color={iconColor} />
               <TextInput
                 placeholder="Password"
                 value={password}
