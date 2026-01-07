@@ -5,22 +5,36 @@ import { useTheme } from '@/theme/global';
 interface Props {
   // Deprecated: prefer structured props below
   title?: string;
-  // Structured props for clearer rendering
+
+  // Structured props
   typeLabel?: string;
   courseCode?: string;
   courseName?: string;
+
   progress: number;
   total: number;
 }
 
-export default function ResultCard({ title, typeLabel, courseCode, courseName, progress, total }: Props) {
+export default function ResultCard({
+  title,
+  typeLabel,
+  courseCode,
+  courseName,
+  progress,
+  total,
+}: Props) {
   const theme = useTheme();
-  const { colors } = theme;
+  const { colors, typography } = theme;
 
   const animatedWidth = useRef(new Animated.Value(0)).current;
-  const progressPercent = (progress / total) * 100;
+
+  // ✅ Safe percentage calculation
+  const progressPercent =
+    total > 0 ? Math.min((progress / total) * 100, 100) : 0;
 
   useEffect(() => {
+    animatedWidth.setValue(0); // reset animation on change
+
     Animated.timing(animatedWidth, {
       toValue: progressPercent,
       duration: 800,
@@ -36,10 +50,24 @@ export default function ResultCard({ title, typeLabel, courseCode, courseName, p
       />
 
       <View style={styles.content}>
-        <Text style={styles.title}>{typeLabel || title || ''}</Text>
+        <Text
+          style={[
+            styles.title,
+            { fontFamily: typography?.fontFamily?.heading },
+          ]}
+        >
+          {typeLabel || title || ''}
+        </Text>
+
         {(courseCode || courseName) ? (
-          <Text style={styles.subTitle} numberOfLines={1}>
-            {[courseCode || '', courseName || ''].filter(Boolean).join(' — ')}
+          <Text
+            style={[
+              styles.subTitle,
+              { fontFamily: typography?.fontFamily?.body },
+            ]}
+            numberOfLines={1}
+          >
+            {[courseCode, courseName].filter(Boolean).join(' — ')}
           </Text>
         ) : null}
 
@@ -57,28 +85,27 @@ export default function ResultCard({ title, typeLabel, courseCode, courseName, p
             ]}
           />
           <Text style={styles.progressTextOverlay}>
-            {progress}/{total}
+            {total > 0 ? `${progress}/${total}` : '0/0'}
           </Text>
         </View>
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   card: {
-    alignSelf:'center',
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 14,
     padding: 14,
-    marginBottom:12,
-    borderWidth:1,
+    marginBottom: 12,
+    borderWidth: 1,
     borderColor: '#331424',
     width: 362,
     elevation: 3,
-    marginLeft:15,
-    marginRight:15,
+    marginLeft: 15,
+    marginRight: 15,
   },
 
   icon: {
@@ -105,18 +132,18 @@ const styles = StyleSheet.create({
 
   progressBackground: {
     width: '100%',
-    height: 24, // increased height for better text fit
+    height: 24,
     borderRadius: 5,
     backgroundColor: '#E5E5E5',
     overflow: 'hidden',
-    justifyContent: 'center', // centers the text vertically
+    justifyContent: 'center',
   },
 
   progressFill: {
     height: '100%',
     backgroundColor: '#4B164C',
     borderRadius: 5,
-    position: 'absolute', // stays behind the text
+    position: 'absolute',
     left: 0,
     top: 0,
   },

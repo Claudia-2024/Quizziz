@@ -57,6 +57,9 @@ const index = () => {
     return (
     <View style= {styles.container}>
       <QuizHeader/>
+             <FlowerCard 
+  greeting={`Hello ${([student?.firstName, student?.lastName].filter(Boolean).join(' ') || 'there')}`}
+  />
       <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:5,},styles.title]}>Hello {([student?.firstName, student?.lastName].filter(Boolean).join(' ') || 'there')}</Text>
       <View style={{ alignSelf:"center"}}>
       </View>
@@ -78,36 +81,26 @@ const index = () => {
         );
       })}
 
-      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Courses</Text>
-      {error ? <Text style={{ color: 'red', marginHorizontal: 15 }}>{error}</Text> : null}
-      {loading ? (
-        <Text style={{ marginHorizontal: 15 }}>Loading courses...</Text>
-      ) : (
-        <FlatList
-          data={courses}
-          keyExtractor={(item, idx) => String(item?.courseCode || idx)}
-          renderItem={({ item }) => (
-            <Text style={{ marginHorizontal: 15, marginBottom: 6, fontFamily: typography.fontFamily.body }}>
-              {item?.courseCode || 'N/A'} — {item?.courseName || ''}
-            </Text>
-          )}
-        />
-      )}
+<View style={styles.headerRow}>
+  <Text
+    style={[
+      { fontFamily: typography.fontFamily.heading },
+      styles.title,
+    ]}
+  >
+    Courses
+  </Text>
 
-      <Text style={[{fontFamily:typography.fontFamily.heading, marginTop:18},styles.title]}>Notifications</Text>
-      {notifications.length === 0 ? (
-        <Text style={{ marginHorizontal: 15, fontFamily: typography.fontFamily.body }}>No notifications</Text>
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item, idx) => String(item?.id || idx)}
-          renderItem={({ item }) => (
-            <Text style={{ marginHorizontal: 15, marginBottom: 6, fontFamily: typography.fontFamily.body }}>
-              {item?.title || 'Notification'}: {item?.message || ''}
-            </Text>
-          )}
-        />
-      )}
+  <TouchableOpacity
+    onPress={() => router.push("/(tabs)/stats")}
+    activeOpacity={0.7}
+    style={styles.viewAllButton}
+  >
+    <Text style={styles.viewAllText}>View all</Text>
+  </TouchableOpacity>
+</View>
+
+
 
 
     </View>
@@ -128,5 +121,62 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textAlign: "left",
     marginBottom: 10,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 15,
+    marginTop: 18,
+    marginBottom: 6,
+  },
+
+
+  viewAllButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#331424',
+  },
+
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#331424',
+  },
+
+  /* existing styles */
+  card: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#331424',
+    width: 362,
+    elevation: 3,
+    marginLeft: 15,
+    marginRight: 15,
+  },
+
+  icon: {
+    width: 32,
+    height: 32,
+    marginRight: 12,
+  },
+
+  courseCode: {
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 4,
+    color: '#331424',
+  },
+
+  courseName: {
+    fontSize: 14,
+    color: '#555',
   },
 })

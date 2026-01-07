@@ -27,7 +27,7 @@ const Profile = () => {
         <View style={styles.avatarContainer}>
           <Image
             style={styles.avatar}
-            source={require('../../assets/icons/pro.png')}
+            source={require('../../assets/icons/student.gif')}
           />
         </View>
 
