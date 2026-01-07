@@ -18,7 +18,7 @@ export default function QuizHeader() {
       {/* Right Side */}
       <View style={styles.right}>
         <Image
-          source={require("../../assets/images/stud.png")}
+          source={require("../../assets/images/stud.jpg")}
           style={styles.avatar}
         />
         <TouchableOpacity
@@ -39,7 +39,7 @@ export default function QuizHeader() {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 60,
+    height: 80,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

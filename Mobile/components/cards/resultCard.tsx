@@ -3,7 +3,9 @@ import React, { useEffect, useRef } from "react";
 import { useTheme } from "@/theme/global";
 
 interface Props {
+  // Deprecated: prefer structured props below
   title?: string;
+  // Structured props for clearer rendering
   typeLabel?: string;
   courseCode?: string;
   courseName?: string;

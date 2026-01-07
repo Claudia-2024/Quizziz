@@ -1,4 +1,3 @@
-// app/get-started-minimal.tsx
 import React from "react";
 import {
   View,
@@ -32,8 +31,17 @@ export default function FlowerCard() {
       <View style={styles.colorTint} />
 
       <View style={styles.container}>
-        <View style={{flexDirection: 'row'}}>
-        <Image source={require('../../assets/images/stack-of-books.png')} style={{width:165, height:165 ,position:'absolute', left:190, bottom:-10}} />
+        <View style={{ flexDirection: "row" }}>
+          <Image
+            source={require("../../assets/images/stack-of-books.png")}
+            style={{
+              width: 165,
+              height: 165,
+              position: "absolute",
+              left: 190,
+              bottom: -10,
+            }}
+          />
         </View>
       </View>
     </ImageBackground>
@@ -55,9 +63,9 @@ export const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(51, 20, 36, 0.8)", // #331424 with transparency
   },
-  text:{
-    width:'70%',
-    color: '#fff'
+  text: {
+    width: "70%",
+    color: "#fff",
   },
 
   container: {
@@ -80,8 +88,7 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     marginBottom: 10,
-    color: '#fff'
-
+    color: "#fff",
   },
 
   subtitle: {
