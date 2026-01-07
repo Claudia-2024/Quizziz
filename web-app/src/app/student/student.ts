@@ -9,6 +9,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import * as XLSX from 'xlsx';
 import { AcademicYear, NavbarService } from '../../services/navbar';
 import { catchError, pipe } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 interface Year {
   yearid: number;
@@ -153,7 +154,7 @@ export class Students implements OnInit {
     pages: [] as number[],
   };
 
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = environment.apiUrl;
   private studentsApi = `${this.apiUrl}/student`;
   private yearsApi = `${this.apiUrl}/year`;
   private classesApi = `${this.apiUrl}/class`;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 
 export interface Notification {
@@ -39,7 +40,7 @@ export interface AcademicYear {
   providedIn: 'root'
 })
 export class NavbarService {
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = environment.apiUrl;
 
   private semestersSubject = new BehaviorSubject<Semester[]>([]);
   private yearsSubject = new BehaviorSubject<AcademicYear[]>([]);
