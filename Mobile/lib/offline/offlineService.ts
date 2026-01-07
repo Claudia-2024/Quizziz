@@ -89,7 +89,7 @@ export async function saveEvaluationsOffline(evaluations: any[]) {
             `INSERT OR REPLACE INTO questions
              (evaluationId, questionId, text, type, points)
              VALUES (?, ?, ?, ?, ?)`,
-            [evalId, q.questionId, q.text, q.type || 'mcq', q.points || 1]
+            [evaluation.id || evaluation.evaluationId, q.questionId, c.choiceId, c.text, c.order || 0]
           );
 
           // Insert choices

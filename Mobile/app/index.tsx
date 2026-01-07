@@ -24,7 +24,7 @@ export default function GetStartedMinimal() {
       <View style={styles.container}>
         <View style={styles.topContainer}>
           <Image
-            source={require("../assets/images/logo.png")}
+            source={require("../assets/images/q.png")}
             style={styles.hero}
             resizeMode="contain"
           />
@@ -68,8 +68,8 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   hero: {
-    width: width * 0.75,
-    height: 300,
+    width: 350,
+    height: 350,
     marginBottom: 30,
     borderRadius: 20,
   },

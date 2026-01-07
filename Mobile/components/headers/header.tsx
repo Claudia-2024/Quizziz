@@ -8,7 +8,7 @@ export default function QuizHeader() {
       {/* Left Side */}
       <View style={styles.left}>
         <Image
-          source={require("../../assets/images/logo.png")} 
+          source={require("../../assets/images/q.png")} 
           style={styles.logo}
           resizeMode="contain"
         />
