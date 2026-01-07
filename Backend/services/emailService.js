@@ -53,7 +53,7 @@ export const isInstitutionalEmail = (email) => {
 
 // Envoyer un email de vérification
 export const sendVerificationEmail = async (email, token, firstName) => {
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+    const verificationUrl = `${'https://quizziz-web.onrender.com' || 'http://localhost:3000'}/verify-email?token=${token}`;
 
     const mailOptions = {
         from: process.env.SMTP_FROM || 'noreply@equizz.cm',

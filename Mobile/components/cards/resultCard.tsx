@@ -1,11 +1,9 @@
-import { StyleSheet, Text, View, Image, Animated } from 'react-native';
-import React, { useEffect, useRef } from 'react';
-import { useTheme } from '@/theme/global';
+import { StyleSheet, Text, View, Image, Animated } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { useTheme } from "@/theme/global";
 
 interface Props {
-  // Deprecated: prefer structured props below
   title?: string;
-  // Structured props for clearer rendering
   typeLabel?: string;
   courseCode?: string;
   courseName?: string;
@@ -13,7 +11,14 @@ interface Props {
   total: number;
 }
 
-export default function ResultCard({ title, typeLabel, courseCode, courseName, progress, total }: Props) {
+export default function ResultCard({
+  title,
+  typeLabel,
+  courseCode,
+  courseName,
+  progress,
+  total,
+}: Props) {
   const theme = useTheme();
   const { colors } = theme;
 
@@ -31,15 +36,15 @@ export default function ResultCard({ title, typeLabel, courseCode, courseName, p
   return (
     <View style={[styles.card, { backgroundColor: colors.white }]}>
       <Image
-        source={require('../../assets/icons/document.png')}
+        source={require("../../assets/icons/document.png")}
         style={styles.icon}
       />
 
       <View style={styles.content}>
-        <Text style={styles.title}>{typeLabel || title || ''}</Text>
-        {(courseCode || courseName) ? (
+        <Text style={styles.title}>{typeLabel || title || ""}</Text>
+        {courseCode || courseName ? (
           <Text style={styles.subTitle} numberOfLines={1}>
-            {[courseCode || '', courseName || ''].filter(Boolean).join(' — ')}
+            {[courseCode || "", courseName || ""].filter(Boolean).join(" — ")}
           </Text>
         ) : null}
 
@@ -51,7 +56,7 @@ export default function ResultCard({ title, typeLabel, courseCode, courseName, p
               {
                 width: animatedWidth.interpolate({
                   inputRange: [0, 100],
-                  outputRange: ['0%', '100%'],
+                  outputRange: ["0%", "100%"],
                 }),
               },
             ]}
@@ -67,18 +72,18 @@ export default function ResultCard({ title, typeLabel, courseCode, courseName, p
 
 const styles = StyleSheet.create({
   card: {
-    alignSelf:'center',
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 14,
     padding: 14,
-    marginBottom:12,
-    borderWidth:1,
-    borderColor: '#331424',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#331424",
     width: 362,
     elevation: 3,
-    marginLeft:15,
-    marginRight:15,
+    marginLeft: 15,
+    marginRight: 15,
   },
 
   icon: {
@@ -93,40 +98,40 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
 
   subTitle: {
     fontSize: 13,
-    color: '#555',
+    color: "#555",
     marginBottom: 6,
   },
 
   progressBackground: {
-    width: '100%',
+    width: "100%",
     height: 24, // increased height for better text fit
     borderRadius: 5,
-    backgroundColor: '#E5E5E5',
-    overflow: 'hidden',
-    justifyContent: 'center', // centers the text vertically
+    backgroundColor: "#E5E5E5",
+    overflow: "hidden",
+    justifyContent: "center", // centers the text vertically
   },
 
   progressFill: {
-    height: '100%',
-    backgroundColor: '#4B164C',
+    height: "100%",
+    backgroundColor: "#4B164C",
     borderRadius: 5,
-    position: 'absolute', // stays behind the text
+    position: "absolute", // stays behind the text
     left: 0,
     top: 0,
   },
 
   progressTextOverlay: {
     fontSize: 14,
-    color: '#fff',
-    fontWeight: '600',
-    textAlign: 'center',
-    width: '100%',
+    color: "#fff",
+    fontWeight: "600",
+    textAlign: "center",
+    width: "100%",
     zIndex: 1,
   },
 });
