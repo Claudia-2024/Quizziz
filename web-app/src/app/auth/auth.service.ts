@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 // Simple API base selection; you can switch to Angular environments later
-const API_BASE = (globalThis as any).API_BASE_URL || 'http://localhost:3000';
+const API_BASE = environment.apiUrl || 'http://localhost:3000';
 
 export interface AdminLoginResponse {
   message?: string;

@@ -83,13 +83,13 @@ export async function saveEvaluationsOffline(evaluations: any[]) {
         );
 
       // Insert questions and choices
-      const questions = Array.isArray(eval.questions) ? eval.questions : [];
+      const questions = Array.isArray(evaluation.questions) ? evaluation.questions : [];
       for (const q of questions) {
         db.runSync?.(
           `INSERT OR REPLACE INTO questions
            (evaluationId, questionId, text, type, points)
            VALUES (?, ?, ?, ?, ?)`,
-          [eval.id || eval.evaluationId, q.questionId, q.text, q.type || 'mcq', q.points || 1]
+          [evaluation.id || evaluation.evaluationId, q.questionId, q.text, q.type || 'mcq', q.points || 1]
         );
 
         const choices = Array.isArray(q.choices) ? q.choices : [];
@@ -98,12 +98,12 @@ export async function saveEvaluationsOffline(evaluations: any[]) {
             `INSERT OR REPLACE INTO choices
              (evaluationId, questionId, choiceId, text, ord)
              VALUES (?, ?, ?, ?, ?)`,
-            [eval.id || eval.evaluationId, q.questionId, c.choiceId, c.text, c.order || 0]
+            [evaluation.id || evaluation.evaluationId, q.questionId, c.choiceId, c.text, c.order || 0]
           );
         }
       }
     }
-
+  });
     db.execSync?.(`COMMIT`);
   } catch (error) {
     console.error("Error saving evaluations offline:", error);
