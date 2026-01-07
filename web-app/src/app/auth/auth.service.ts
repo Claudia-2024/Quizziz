@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
 // Simple API base selection; you can switch to Angular environments later
-const API_BASE = environment.apiUrl || 'http://localhost:3000';
+const API_BASE = environment.apiUrl || 'http://localhost:3000' || 'https://quizziz-backend-ir16.onrender.com';
 
 export interface AdminLoginResponse {
   message?: string;

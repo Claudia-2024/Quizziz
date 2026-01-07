@@ -16,10 +16,10 @@ export const comparePassword = async (password, hashedPassword) => {
 // Générer un token JWT
 export const generateToken = (matricule, email, role = 'student') => {
     return jwt.sign(
-        { 
-            matricule, 
-            email, 
-            role 
+        {
+            matricule,
+            email,
+            role
         },
         JWT_SECRET,
         { expiresIn: '7d' } // Token valide pendant 7 jours
@@ -34,4 +34,3 @@ export const generateRefreshToken = (matricule) => {
         { expiresIn: '30d' }
     );
 };
-

@@ -8,7 +8,7 @@ export default function QuizHeader() {
       {/* Left Side */}
       <View style={styles.left}>
         <Image
-          source={require("../../assets/images/q.png")} 
+          source={require("../../assets/images/l.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -18,10 +18,13 @@ export default function QuizHeader() {
       {/* Right Side */}
       <View style={styles.right}>
         <Image
-          source={require("../../assets/icons/pro.png")} // user image
+          source={require("../../assets/images/stud.png")}
           style={styles.avatar}
         />
-        <TouchableOpacity style={styles.bellButton} onPress={() => router.push("/notifications/page")}>
+        <TouchableOpacity
+          style={styles.bellButton}
+          onPress={() => router.push("/notifications/page")}
+        >
           <Image
             source={require("../../assets/icons/notification.png")}
             style={styles.bellIcon}
