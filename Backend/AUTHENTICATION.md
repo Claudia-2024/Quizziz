@@ -3,6 +3,7 @@
 ## Vue d'ensemble
 
 Le système d'authentification complet pour les étudiants inclut :
+
 - Inscription avec vérification d'email institutionnel
 - Connexion par matricule et mot de passe
 - Connexion par carte étudiante
@@ -22,7 +23,7 @@ SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=noreply@equizz.cm
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://quizziz-backend-ir16.onrender.com
 ```
 
 ## Endpoints d'Authentification
@@ -34,6 +35,7 @@ FRONTEND_URL=http://localhost:3000
 Inscrit un nouvel étudiant avec vérification d'email institutionnel.
 
 **Body:**
+
 ```json
 {
   "matricule": "STU123456",
@@ -48,6 +50,7 @@ Inscrit un nouvel étudiant avec vérification d'email institutionnel.
 ```
 
 **Réponse (201):**
+
 ```json
 {
   "message": "Inscription réussie. Veuillez vérifier votre email pour activer votre compte.",
@@ -63,6 +66,7 @@ Inscrit un nouvel étudiant avec vérification d'email institutionnel.
 ```
 
 **Erreurs possibles:**
+
 - `400`: Champs manquants ou email non institutionnel
 - `409`: Matricule, email ou carte étudiante déjà utilisés
 
@@ -73,6 +77,7 @@ Inscrit un nouvel étudiant avec vérification d'email institutionnel.
 Connecte un étudiant avec son matricule et mot de passe.
 
 **Body:**
+
 ```json
 {
   "matricule": "STU123456",
@@ -81,6 +86,7 @@ Connecte un étudiant avec son matricule et mot de passe.
 ```
 
 **Réponse (200):**
+
 ```json
 {
   "message": "Connexion réussie",
@@ -102,6 +108,7 @@ Connecte un étudiant avec son matricule et mot de passe.
 ```
 
 **Erreurs possibles:**
+
 - `400`: Matricule ou mot de passe manquant
 - `401`: Matricule ou mot de passe incorrect
 
@@ -112,6 +119,7 @@ Connecte un étudiant avec son matricule et mot de passe.
 Connecte un étudiant avec son numéro de carte étudiante et mot de passe.
 
 **Body:**
+
 ```json
 {
   "studentCardId": "CARD123456",
@@ -122,6 +130,7 @@ Connecte un étudiant avec son numéro de carte étudiante et mot de passe.
 **Réponse (200):** Identique à la connexion par matricule
 
 **Erreurs possibles:**
+
 - `400`: Carte étudiante ou mot de passe manquant
 - `401`: Carte étudiante ou mot de passe incorrect
 
@@ -132,9 +141,11 @@ Connecte un étudiant avec son numéro de carte étudiante et mot de passe.
 Vérifie l'email de l'étudiant avec le token reçu par email.
 
 **Query Parameters:**
+
 - `token`: Token de vérification reçu par email
 
 **Réponse (200):**
+
 ```json
 {
   "message": "Email vérifié avec succès"
@@ -142,6 +153,7 @@ Vérifie l'email de l'étudiant avec le token reçu par email.
 ```
 
 **Erreurs possibles:**
+
 - `400`: Token manquant
 - `404`: Token invalide ou expiré
 
@@ -152,11 +164,13 @@ Vérifie l'email de l'étudiant avec le token reçu par email.
 Permet à un étudiant de changer de classe pour l'année académique suivante (N+1).
 
 **Headers:**
+
 ```
 Authorization: Bearer JWT_TOKEN
 ```
 
 **Body:**
+
 ```json
 {
   "newClassId": 2,
@@ -165,6 +179,7 @@ Authorization: Bearer JWT_TOKEN
 ```
 
 **Réponse (200):**
+
 ```json
 {
   "message": "Classe mise à jour avec succès pour l'année académique suivante",
@@ -181,6 +196,7 @@ Authorization: Bearer JWT_TOKEN
 ```
 
 **Erreurs possibles:**
+
 - `400`: Nouvelle classe manquante ou année académique invalide
 - `401`: Token manquant ou invalide
 - `404`: Étudiant, classe ou année académique non trouvés
@@ -190,12 +206,12 @@ Authorization: Bearer JWT_TOKEN
 Pour protéger une route, utilisez le middleware `authenticateToken` :
 
 ```javascript
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken } from "../middleware/auth.js";
 
-router.get('/protected-route', authenticateToken, (req, res) => {
+router.get("/protected-route", authenticateToken, (req, res) => {
   // req.student contient les informations de l'étudiant connecté
   // req.matricule contient le matricule de l'étudiant
-  res.json({ message: 'Route protégée', student: req.student });
+  res.json({ message: "Route protégée", student: req.student });
 });
 ```
 
@@ -236,4 +252,3 @@ Ou manuellement avec votre outil de migration.
 2. **L'email doit être vérifié** avant que certaines fonctionnalités soient disponibles (selon votre logique métier)
 3. **Le changement de classe** n'est autorisé que pour l'année académique suivante (N+1)
 4. **La carte étudiante** est optionnelle lors de l'inscription mais peut être utilisée pour se connecter
-
