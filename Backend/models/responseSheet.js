@@ -13,11 +13,11 @@ const ResponseSheet = sequelize.define('ResponseSheet', {
         allowNull: true,
     },
     serverStartTime: {
-        type: DataTypes.TIME,
+        type: DataTypes.DATE,
         allowNull: false,
     },
     clientStartTime: {
-        type: DataTypes.TIME,
+        type: DataTypes.DATE,
         allowNull: true,
     },
     score: {
