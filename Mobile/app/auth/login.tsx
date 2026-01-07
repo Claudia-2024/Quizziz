@@ -54,9 +54,8 @@ export default function Login() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.centerContainer}>
-            {/* Logo */}
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require("../../assets/images/q.png")}
               style={styles.logo}
             />
 
@@ -108,13 +107,13 @@ export default function Login() {
             {error ? (
               <Text style={{ color: 'red',textAlign: 'center', width: '100%' }}>{error}</Text>
             ) : null}
-            {/* Login Link */}
+            {/* Login Button */}
             <TouchableOpacity
               onPress={() => router.push("/auth/signup")}
               style={{ marginTop: 16 }}
             >
               <Text style={{ color: colors.primary, fontSize: 16, fontFamily: typography.fontFamily.buttonText }}>
-                Create an account? Sign Up.
+                Dont have an account? Sign Up.
               </Text>
             </TouchableOpacity>
 

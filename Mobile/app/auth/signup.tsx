@@ -88,7 +88,7 @@ export default function Signup() {
           <View style={styles.centerContainer}>
             {/* Logo */}
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require("../../assets/images/q.png")}
               style={styles.logo}
             />
 
@@ -202,7 +202,7 @@ export default function Signup() {
                   >
                     Select Class
                   </Text>
-                  <ScrollView style={{ maxHeight: 300, width: "100%" }}>
+                  <ScrollView style={{ maxHeight: 300, width: "100%", backgroundColor: "#fff" }}>
                     {classes.map((c, idx) => (
                       <TouchableOpacity
                         key={
@@ -342,7 +342,7 @@ export default function Signup() {
             {/* Login Link */}
             <TouchableOpacity
               onPress={() => router.push("/auth/login")}
-              style={{ marginTop: 16 }}
+              style={{ marginTop: 6 }}
             >
               <Text
                 style={{
@@ -373,17 +373,16 @@ const styles = StyleSheet.create({
   centerContainer: {
     flexGrow: 1,
     alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 24,
+    paddingTop:60,
     gap: 12,
   },
   logo: {
-    width: 80,
-    height: 120,
-    marginBottom: 10,
+    width: 180,
+    height: 100,
   },
   text: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "900",
     marginBottom: 20,
   },
@@ -393,7 +392,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 12,
-    marginVertical: 4, // reduced space between inputs
+    marginVertical: 3, 
     height: 50,
     width: "100%",
   },
