@@ -8,7 +8,7 @@ import nodeCron from 'node-cron';
 import academicYearController from './controllers/academicYearController.js';
 import semesterController from './controllers/semesterController.js';
 import './models/association.js';
-// import './cron/evaluationScheduler.js'
+import './cron/evaluationScheduler.js'
 import academicYearRoutes from './routes/academicYearRoutes.js';
 import answerRoutes from './routes/answerRoutes.js';
 import choiceRoutes from './routes/choiceRoutes.js';
@@ -35,7 +35,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://your-frontend-domain.com'
+    'https://quizziz-web.onrender.com'
   ],
   credentials: true
 }));
@@ -79,12 +79,11 @@ app.listen(port, () => {
   .then(() => {
     console.log('Connected to DB:', sequelize.config.database);
   });
-
-    // sequelize.sync({ alter: true }).then(() => {
-    //     console.log("All tables synchronised.");
-    // }).catch(err => {
-    //     console.error("Error synchronising tables: ", err);
-    // });
-    // academicYearController.updateCurrentAcademicYear();
-    // semesterController.updateCurrentSemester();
+    sequelize.sync().then(() => {
+        console.log("All tables synchronised.");
+    }).catch(err => {
+        console.error("Error synchronising tables: ", err);
+    });
+    academicYearController.updateCurrentAcademicYear();
+    semesterController.updateCurrentSemester();
 });

@@ -3,8 +3,9 @@ import * as SQLite from 'expo-sqlite';
 
 export const DB_NAME = 'quizzy_offline.db';
 
-export function openDB() {
-  return SQLite.openDatabaseSync?.(DB_NAME) as SQLite.SQLiteDatabase | any;
+export async function openDB() {
+  // Forces a new connection to avoid the NullPointer issue on Android
+  return await SQLite.openDatabaseAsync(DB_NAME, { useNewConnection: true });
 }
 
 export async function initDB() {
