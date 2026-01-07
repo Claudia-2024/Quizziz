@@ -37,7 +37,7 @@ const Profile = () => {
           <View style={styles.avatarContainer}>
             <Image
               style={styles.avatar}
-              source={require("../../assets/images/stud.png")}
+              source={require("../../assets/images/stud.jpg")}
             />
           </View>
 

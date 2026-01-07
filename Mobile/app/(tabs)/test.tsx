@@ -505,7 +505,7 @@ const TestQuizPage: React.FC = () => {
             {evaluations.length === 0 ? (
               <View style={styles.emptyState}>
                 <Image
-                  source={require("../../assets/icons/process.png")}
+                  source={require("../../assets/icons/cancel.png")}
                   style={{
                     width: 80,
                     height: 80,

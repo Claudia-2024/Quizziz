@@ -26,7 +26,7 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <!-- Wizard Steps Indicator -->
         <div *ngIf="showCreateEvaluationWizard" class="wizard-steps" style="margin-bottom: 20px;">
           <div class="step-indicator" style="display: flex; justify-content: center; gap: 20px;">
@@ -40,7 +40,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="modal-body">
           <form (ngSubmit)="goToQuestionsStep()">
             <div class="form-group">
@@ -92,7 +92,7 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <!-- Wizard Steps Indicator -->
         <div *ngIf="showCreateEvaluationWizard" class="wizard-steps" style="margin-bottom: 20px;">
           <div class="step-indicator" style="display: flex; justify-content: center; gap: 20px;">
@@ -106,7 +106,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="modal-body" style="padding: 20px;">
           <!-- Question Import Section -->
           <div class="question-import-section" style="margin-bottom: 30px;">
@@ -164,10 +164,10 @@
             <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; font-size: 12px;">
               <strong>Expected Format:</strong>
               <ul style="margin: 5px 0 0 15px; padding: 0;">
-                <li>Required columns: <code>Question</code>, <code>Type</code> (MCQ/OPEN/TRUE_FALSE), <code>Points</code></li>
+                <li>Required columns: <code>Question</code>, <code>Type</code> (MCQ/Open/Close), <code>Points</code></li>
                 <li>For MCQ: Add columns <code>ChoiceA</code>, <code>ChoiceB</code>, etc. and <code>CorrectAnswer</code> (A, B, C, etc.)</li>
-                <li>For TRUE_FALSE: Add columns <code>ChoiceA</code> (True) and <code>ChoiceB</code> (False)</li>
-                <li>For OPEN: Just <code>Question</code>, <code>Type</code> (OPEN), and <code>Points</code></li>
+                <li>For Close: Add columns <code>ChoiceA</code> (True) and <code>ChoiceB</code> (False)</li>
+                <li>For Open: Just <code>Question</code>, <code>Type</code> (Open), and <code>Points</code></li>
               </ul>
             </div>
           </div>
@@ -205,10 +205,10 @@
                     </span>
                   </div>
                 </div>
-                <div *ngIf="question.type === 'OPEN'" style="margin-left: 20px;">
+                <div *ngIf="question.type === 'Open'" style="margin-left: 20px;">
                   <span style="color: #666; font-style: italic;">Open-ended question</span>
                 </div>
-                <div *ngIf="question.type === 'TRUE_FALSE' && question.choices" style="margin-left: 20px;">
+                <div *ngIf="question.type === 'Close' && question.choices" style="margin-left: 20px;">
                   <div *ngFor="let choice of question.choices" style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{choice.order}}.</span>
                     <span style="margin-left: 10px;">{{choice.text}}</span>
@@ -249,7 +249,7 @@
                     </span>
                   </div>
                 </div>
-                <div *ngIf="question?.type === 'TRUE_FALSE' && question?.choices" style="margin-left: 20px;">
+                <div *ngIf="question?.type === 'Close' && question?.choices" style="margin-left: 20px;">
                   <div *ngFor="let choice of question.choices || []" style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="min-width: 20px;">{{choice?.order || 1}}.</span>
                     <span style="margin-left: 10px;">{{choice?.text}}</span>
@@ -274,7 +274,7 @@
           </button>
           <button *ngIf="!showCreateEvaluationWizard" class="btn btn-secondary" (click)="closeQuestionsModal()">Cancel</button>
           <button class="btn btn-primary" (click)="saveEvaluation()">
-            <i class="fas fa-save"></i> 
+            <i class="fas fa-save"></i>
             {{showCreateEvaluationWizard ? 'Create Evaluation' : 'Update Evaluation'}} with Questions
           </button>
         </div>
@@ -299,8 +299,8 @@
             <label for="questionType">Question Type *</label>
             <select id="questionType" class="form-control" [(ngModel)]="currentQuestion.type" [ngModelOptions]="{standalone: true}" (change)="onQuestionTypeChange()" required>
               <option value="MCQ">Multiple Choice (MCQ)</option>
-              <option value="OPEN">Open Ended</option>
-              <option value="TRUE_FALSE">True/False</option>
+              <option value="Open">Open Ended</option>
+              <option value="Close">True/False</option>
             </select>
           </div>
           <div class="form-group">
@@ -313,7 +313,7 @@
           </div>
 
           <!-- Choices for MCQ and True/False -->
-          <div *ngIf="currentQuestion.type === 'MCQ' || currentQuestion.type === 'TRUE_FALSE'" class="choices-section" style="margin-top: 20px;">
+          <div *ngIf="currentQuestion.type === 'MCQ' || currentQuestion.type === 'Close'" class="choices-section" style="margin-top: 20px;">
             <h4 style="margin-bottom: 15px; color: #331424;">Choices</h4>
             <div *ngFor="let choice of currentQuestion.choices || []; let i = index" class="choice-item" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
               <input type="text" [(ngModel)]="choice.text" [ngModelOptions]="{standalone: true}" placeholder="Choice text" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -331,7 +331,7 @@
             </button>
           </div>
 
-          <div *ngIf="currentQuestion.type === 'OPEN'" class="open-ended-section" style="margin-top: 20px;">
+          <div *ngIf="currentQuestion.type === 'Open'" class="open-ended-section" style="margin-top: 20px;">
             <p style="color: #666; font-style: italic;">Open-ended questions will be manually graded after submission.</p>
           </div>
         </div>

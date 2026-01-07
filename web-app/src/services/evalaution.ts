@@ -11,7 +11,7 @@ export interface Choice {
 
 export interface Question {
   text: string;
-  type: 'MCQ' | 'OPEN' | 'TRUE_FALSE';
+  type: 'MCQ' | 'Open' | 'Close';
   order: number;
   points: number;
   choices?: Choice[];
@@ -31,7 +31,7 @@ export interface PerformanceData {
 export interface EvaluationItem {
   evaluationId: number;
   publishedDate: string;
-  type: 'Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others';
+  type: 'Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others';
   startTime: string;
   endTime: string;
   courseCode: string;

@@ -81,7 +81,7 @@ export class Test implements OnInit {
 
   newEvaluation = {
     publishedDate: this.getTodayDate(),
-    type: '' as 'Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others',
+    type: '' as 'Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others',
     startTime: '08:00',
     endTime: '10:00',
     courseCode: '',
@@ -134,10 +134,10 @@ export class Test implements OnInit {
   selectedStatus = 'All';
   searchTerm = '';
 
-  evalTypes: ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[] = [
+  evalTypes: ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[] = [
     'Final Exam',
     'Resit',
-    'Mid term',
+    'Mid Term',
     'CC',
     'TD',
     'TP',
@@ -157,7 +157,7 @@ export class Test implements OnInit {
     {
       evaluationId: 1,
       publishedDate: '2025-12-30',
-      type: 'Mid term',
+      type: 'Mid Term',
       startTime: '08:00:00',
       endTime: '10:00:00',
       courseCode: 'ISI4217',
@@ -212,7 +212,7 @@ export class Test implements OnInit {
         },
         {
           text: 'Explain the difference between let and var.',
-          type: 'OPEN',
+          type: 'Open',
           order: 2,
           points: 3
         }
@@ -747,7 +747,7 @@ export class Test implements OnInit {
       const worksheetData = [
         ['publishedDate', 'type', 'startTime', 'endTime', 'courseCode'],
         ['2025-12-30', 'Resit', '08:00:00', '10:00:00', 'ISI4217'],
-        ['2025-12-31', 'Mid term', '09:00:00', '11:00:00', 'WEB101'],
+        ['2025-12-31', 'Mid Term', '09:00:00', '11:00:00', 'WEB101'],
         ['2026-01-05', 'Final Exam', '10:00:00', '12:00:00', 'MAT201'],
         ['2026-01-10', 'TP', '14:00:00', '16:00:00', 'PHY301'],
         ['2026-01-15', 'Resit', '13:00:00', '15:00:00', 'CHEM202']
@@ -892,7 +892,7 @@ export class Test implements OnInit {
 
   createQuestionFromRow(row: any, index: number): Question | null {
     const questionText = row['question'] || row['text'] || row['question text'] || '';
-    const questionType = (row['type'] || row['question type'] || 'MCQ').toUpperCase() as 'MCQ' | 'OPEN' | 'TRUE_FALSE';
+    const questionType = (row['type'] || row['question type'] || 'MCQ').toUpperCase() as 'MCQ' | 'Open' | 'Close';
     const points = parseInt(row['points'] || row['score'] || '1');
     const order = parseInt(row['order'] || row['number'] || (index + 1).toString());
     if (!questionText) return null;
@@ -914,7 +914,7 @@ export class Test implements OnInit {
       if (choices.length > 0 && !choices.some((c: any) => c.isCorrect)) {
         choices[0].isCorrect = true;
       }
-    } else if (questionType === 'TRUE_FALSE') {
+    } else if (questionType === 'Close') {
       choices = [
         { text: 'True', order: 1, isCorrect: true },
         { text: 'False', order: 2, isCorrect: false }
@@ -1033,8 +1033,8 @@ export class Test implements OnInit {
       const worksheetData = [
         ['Question', 'Type', 'Points', 'Order', 'ChoiceA', 'ChoiceB', 'ChoiceC', 'ChoiceD', 'CorrectAnswer'],
         ['What is React?', 'MCQ', '2', '1', 'A JavaScript library', 'A programming language', 'A database', 'A framework', 'A'],
-        ['Explain closure in JavaScript', 'OPEN', '3', '2', '', '', '', '', ''],
-        ['JavaScript is single-threaded', 'TRUE_FALSE', '1', '3', 'True', 'False', '', '', 'True'],
+        ['Explain closure in JavaScript', 'Open', '3', '2', '', '', '', '', ''],
+        ['JavaScript is single-threaded', 'Close', '1', '3', 'True', 'False', '', '', 'True'],
         ['Which hook manages state?', 'MCQ', '2', '4', 'useEffect', 'useState', 'useReducer', 'useContext', 'B']
       ];
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -1132,7 +1132,7 @@ export class Test implements OnInit {
     const classMap: { [key: string]: string } = {
       'Final Exam': 'eval-type-normal',
       'Resit': 'eval-type-resit',
-      'Mid term': 'eval-type-midterm',
+      'Mid Term': 'eval-type-midterm',
       'CC': 'eval-type-normal',
       'TD': 'eval-type-practicals',
       'TP': 'eval-type-practicals',
@@ -1184,7 +1184,7 @@ export class Test implements OnInit {
   openAddModal() {
     this.newEvaluation = {
       publishedDate: this.getTodayDate(),
-      type: '' as 'Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others',
+      type: '' as 'Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others',
       startTime: '08:00',
       endTime: '10:00',
       courseCode: '',
@@ -1299,6 +1299,7 @@ export class Test implements OnInit {
 
     setTimeout(() => this.cdr.detectChanges(), 0);
   } else {
+    console.log()
 
     this.evaluationService.createEvaluation(evaluationData).subscribe({
       next: (createdEvaluation: EvaluationItem) => {
@@ -1502,7 +1503,7 @@ export class Test implements OnInit {
   onQuestionTypeChange() {
     if (this.currentQuestion.type === 'MCQ') {
       this.currentQuestion.choices = this.getDefaultChoices();
-    } else if (this.currentQuestion.type === 'TRUE_FALSE') {
+    } else if (this.currentQuestion.type === 'Close') {
       this.currentQuestion.choices = [
         { text: 'True', order: 1, isCorrect: true },
         { text: 'False', order: 2, isCorrect: false }
@@ -1551,7 +1552,7 @@ export class Test implements OnInit {
       this.showToastMessage('Please fill all required fields!', 'error');
       return;
     }
-    if (this.currentQuestion.type !== 'OPEN' && this.currentQuestion.choices) {
+    if (this.currentQuestion.type !== 'Open' && this.currentQuestion.choices) {
       const hasCorrect = this.currentQuestion.choices.some((c: any) => c.isCorrect);
       if (!hasCorrect) {
         this.showToastMessage('Please mark one choice as correct!', 'error');
@@ -1592,7 +1593,7 @@ export class Test implements OnInit {
     }
     this.editingQuestionIndex = index;
     this.currentQuestion = { ...this.selectedEvaluation.questions[index] };
-    if (this.currentQuestion.type === 'TRUE_FALSE' && !this.currentQuestion.choices) {
+    if (this.currentQuestion.type === 'Close' && !this.currentQuestion.choices) {
       this.currentQuestion.choices = [
         { text: 'True', order: 1, isCorrect: true },
         { text: 'False', order: 2, isCorrect: false }
@@ -1609,7 +1610,7 @@ export class Test implements OnInit {
     }
     this.editingImportedQuestionIndex = index;
     this.currentQuestion = { ...this.importPreviewData[index] };
-    if (this.currentQuestion.type === 'TRUE_FALSE' && !this.currentQuestion.choices) {
+    if (this.currentQuestion.type === 'Close' && !this.currentQuestion.choices) {
       this.currentQuestion.choices = [
         { text: 'True', order: 1, isCorrect: true },
         { text: 'False', order: 2, isCorrect: false }
@@ -1691,23 +1692,23 @@ export class Test implements OnInit {
 
   loadEvaluationTypes() {
     if (this.useMockData) {
-      this.evalTypes = [...new Set(this.mockEvaluations.map(item => item.type))] as ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[];
-      const defaultTypes: ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[] = ['Final Exam', 'Resit', 'Mid term', 'CC', 'TD', 'TP', 'Others'];
-      this.evalTypes = [...new Set([...this.evalTypes, ...defaultTypes])].sort() as ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[];
+      this.evalTypes = [...new Set(this.mockEvaluations.map(item => item.type))] as ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[];
+      const defaultTypes: ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[] = ['Final Exam', 'Resit', 'Mid Term', 'CC', 'TD', 'TP', 'Others'];
+      this.evalTypes = [...new Set([...this.evalTypes, ...defaultTypes])].sort() as ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[];
       setTimeout(() => this.cdr.detectChanges(), 0);
     } else {
       this.evaluationService.getEvaluations().subscribe({
         next: (evaluations: EvaluationItem[]) => {
-          const typesFromEvaluations = [...new Set(evaluations.map(item => item.type))] as ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[];
-          const defaultTypes: ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[] = ['Final Exam', 'Resit', 'Mid term', 'CC', 'TD', 'TP', 'Others'];
-          this.evalTypes = [...new Set([...typesFromEvaluations, ...defaultTypes])].sort() as ('Final Exam' | 'Resit' | 'Mid term' | 'CC' | 'TD' | 'TP' | 'Others')[];
+          const typesFromEvaluations = [...new Set(evaluations.map(item => item.type))] as ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[];
+          const defaultTypes: ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[] = ['Final Exam', 'Resit', 'Mid Term', 'CC', 'TD', 'TP', 'Others'];
+          this.evalTypes = [...new Set([...typesFromEvaluations, ...defaultTypes])].sort() as ('Final Exam' | 'Resit' | 'Mid Term' | 'CC' | 'TD' | 'TP' | 'Others')[];
           this.showToastMessage('Evaluation types extracted from evaluations', 'success');
           setTimeout(() => this.cdr.detectChanges(), 0);
         },
         error: (error: any) => {
           console.error('Error loading evaluations for types:', error);
           this.showToastMessage('Failed to load evaluation types from server.', 'error');
-          this.evalTypes = ['Final Exam', 'Resit', 'Mid term', 'CC', 'TD', 'TP', 'Others'];
+          this.evalTypes = ['Final Exam', 'Resit', 'Mid Term', 'CC', 'TD', 'TP', 'Others'];
           setTimeout(() => this.cdr.detectChanges(), 0);
         }
       });
